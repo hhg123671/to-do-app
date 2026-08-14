@@ -1,458 +1,786 @@
 <!doctype html>
-<html lang="en">
+<html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>To Do List</title>
-    <link rel="shortcut icon" href="logo.png" type="image/png">
+    <title>To Do List | قائمة المهام</title>
+    <link rel="shortcut icon" href="logo.png" type="image/x-icon">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
     <style>
-        /* 1. إعدادات الصفحة العامة */
-        body {
-            background: #222;
-            color: white;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        /* ==========================================
+           1. متغيرات الألوان والثيمات (Color Themes)
+           ========================================== */
+        :root {
+            /* Theme Default: Violet */
+            --primary: #8b5cf6;
+            --primary-hover: #7c3aed;
+            --primary-glow: rgba(139, 92, 246, 0.35);
+
+            --bg-color: #0f172a;
+            --surface-color: #1e293b;
+            --card-bg: #334155;
+            --card-border: #475569;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --success: #10b981;
+            --danger: #ef4444;
+            --radius-lg: 16px;
+            --radius-md: 10px;
+            --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* الثيم الأزرق - Ocean */
+        [data-theme="ocean"] {
+            --primary: #0284c7;
+            --primary-hover: #0369a1;
+            --primary-glow: rgba(2, 132, 199, 0.35);
+        }
+
+        /* الثيم الأخضر - Emerald */
+        [data-theme="emerald"] {
+            --primary: #10b981;
+            --primary-hover: #059669;
+            --primary-glow: rgba(16, 185, 129, 0.35);
+        }
+
+        /* الثيم الوردي - Rose */
+        [data-theme="rose"] {
+            --primary: #f43f5e;
+            --primary-hover: #e11d48;
+            --primary-glow: rgba(244, 63, 94, 0.35);
+        }
+
+        /* الوضع الفاتح - Light Mode */
+        body.light-mode {
+            --bg-color: #f1f5f9;
+            --surface-color: #ffffff;
+            --card-bg: #f8fafc;
+            --card-border: #e2e8f0;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08);
+        }
+
+        * {
+            box-sizing: border-box;
             margin: 0;
-            padding: 20px;
+            padding: 0;
+            font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
         }
 
-        /* 2. العنوان الرئيسي وزرار Create */
-        .title {
-            text-align: center;
-            background: dimgray;
-            padding: 20px;
-            max-width: 600px;
-            margin: 0 auto 15px auto;
-            border-radius: 15px;
-            cursor: pointer;
-            user-select: none;
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 2rem 1rem;
+            transition: var(--transition);
+            overflow-x: hidden;
         }
 
-        .create-wrapper {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
-        .create-btn {
-            padding: 10px 25px;
-            font-size: 15px;
-            font-weight: bold;
-            border-radius: 8px;
-            border: none;
-            color: #fff;
-            background-color: #7d2ae8;
-            cursor: pointer;
-            transition: transform 0.2s ease, background-color 0.2s ease;
-        }
-
-        .create-btn:hover {
-            background-color: #6c23cd;
-            transform: scale(1.05);
-        }
-
-        /* 3. حاوية الأقسام الرئيسية */
-        .listis {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            gap: 20px;
-            max-width: 1100px;
+        .container {
+            max-width: 1000px;
             margin: 0 auto;
         }
 
-        /* 4. الأعمدة */
-        .com {
-            flex: 1;
+        /* ==========================================
+           2. شريط التحكم الأعلى والقائمة التفاعلية
+           ========================================== */
+        .top-bar {
             display: flex;
-            flex-direction: column;
+            justify-content: space-between;
             align-items: center;
-            width: 100%;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
         }
 
-        .title2, .title3 {
-            font-size: 22px;
-            margin-top: 0;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-
-        /* 5. أماكن نزول الكروت */
-        .tasks, #completed {
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 20px;
-        }
-
-        .task-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            width: 100%;
-        }
-
-        /* 6. الخط الفاصل */
-        .line {
-            width: 3px;
-            background: darkgrey;
-            border-radius: 10px;
-            align-self: stretch;
-            min-height: 400px;
-        }
-
-        /* 7. تصميم الكارت */
-        .card {
-            width: 100%;
-            max-width: 290px;
-            min-height: 70px;
-            background: #353535;
-            border-radius: 20px;
+        .controls-group {
             display: flex;
             align-items: center;
-            justify-content: flex-start;
-            backdrop-filter: blur(10px);
-            transition: transform 0.3s ease-in-out;
-            padding: 5px 0;
+            gap: 10px;
         }
 
-        .card:hover {
+        .theme-toggle-btn, .palette-btn {
+            background: var(--surface-color);
+            border: 1px solid var(--card-border);
+            color: var(--text-main);
+            padding: 0.6rem 1rem;
+            border-radius: var(--radius-md);
             cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+        }
+
+        .theme-toggle-btn:hover, .palette-btn:hover {
+            transform: translateY(-2px);
+            border-color: var(--primary);
+        }
+
+        /* قائمة اختيار الألوان */
+        .color-palette-menu {
+            display: none;
+            position: absolute;
+            top: 60px;
+            right: 1rem;
+            background: var(--surface-color);
+            border: 1px solid var(--card-border);
+            padding: 0.8rem;
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow);
+            gap: 10px;
+            z-index: 100;
+            animation: popIn 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .color-palette-menu.show {
+            display: flex;
+        }
+
+        .color-dot {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: var(--transition);
+        }
+
+        .color-dot:hover {
+            transform: scale(1.2);
+        }
+
+        .color-dot.active {
+            border-color: var(--text-main);
+            transform: scale(1.15);
+        }
+
+        /* Header Section */
+        header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .main-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            background: linear-gradient(135deg, var(--text-main), var(--primary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+            display: inline-block;
+            transition: var(--transition);
+            animation: float 4s ease-in-out infinite;
+        }
+
+        .main-title:hover {
             transform: scale(1.03);
         }
 
-        .img {
-            width: 50px;
-            height: 50px;
-            margin-left: 10px;
-            border-radius: 10px;
-            background: linear-gradient(#d7cfcf, #9198e5);
-            transition: background 0.3s ease;
-            flex-shrink: 0;
+        .author-subtitle {
+            font-size: 0.85rem;
+            color: var(--text-muted);
         }
 
-        .card:hover > .img {
-            background: linear-gradient(#9198e5, #712020);
+        /* Actions Bar */
+        .actions-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
         }
 
-        .textBox {
-            width: calc(100% - 80px);
-            margin-left: 10px;
-            margin-right: 10px;
-            font-family: 'Poppins', sans-serif;
-            word-break: break-word;
-        }
-
-        .textContent {
+        .create-btn {
+            background: var(--primary);
+            color: #fff;
+            padding: 0.8rem 1.6rem;
+            border-radius: var(--radius-md);
+            border: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
             display: flex;
             align-items: center;
-        }
-
-        .h1 {
-            font-size: 15px;
-            font-weight: bold;
-            margin: 0;
-            color: var(--text-color);
-        }
-
-        /* 8. مجموعة الأزرار والأنيميشن */
-        .btn-group {
-            display: flex;
-            justify-content: center;
-            gap: 6px;
-            margin-top: 8px;
-            flex-wrap: wrap;
-        }
-
-        .del-btn, .edit-btn, .done-btn, .not_done-btn {
+            gap: 8px;
+            box-shadow: 0 4px 14px var(--primary-glow);
+            transition: var(--transition);
             position: relative;
-            padding: 8px 14px;
-            border-radius: 6px;
-            border: none;
-            color: #fff;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            font-size: 12px;
+            overflow: hidden;
         }
 
-        .del-btn { background-color: #e74c3c; }      /* أحمر */
-        .edit-btn { background-color: #7d2ae8; }     /* بنفسجي */
-        .done-btn { background-color: #2ecc71; }     /* أخضر */
-        .not_done-btn { background-color: #e67e22; } /* برتقالي */
+        .create-btn:hover {
+            background: var(--primary-hover);
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 8px 22px var(--primary-glow);
+        }
 
-        .del-btn:active, .edit-btn:active, .done-btn:active, .not_done-btn:active {
-            transform: scale(0.96);
+        .create-btn:active {
+            transform: translateY(-1px) scale(0.98);
+        }
+
+        .stats-badge {
+            background: var(--surface-color);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            border: 1px solid var(--card-border);
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .stats-badge span {
+            color: var(--primary);
+            font-weight: 700;
         }
 
         /* ==========================================
-           متغيرات الألوان للمظهرين (Dark & Light)
+           3. التنسيقات والأعمدة (Board & Columns)
            ========================================== */
-        :root {
-            --bg-color: #222;
-            --text-color: #ffffff;
-            --card-bg: #353535;
-            --header-bg: dimgray;
-            --line-color: darkgrey;
+        .board {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            align-items: start;
         }
 
-        body.light-mode {
-            --bg-color: #f4f5f9;
-            --text-color: #1a1a1a;
-            --card-bg: #ffffff;
-            --header-bg: #7d2ae8;
-            --line-color: #ccc;
+        .column {
+            background: var(--surface-color);
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            min-height: 450px;
+            transition: var(--transition);
         }
 
-        body {
-            background: var(--bg-color);
-            color: var(--text-color);
-            transition: background 0.4s ease, color 0.4s ease;
+        .column-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid var(--card-border);
         }
 
-        .title {
-            background: var(--header-bg);
-            transition: background 0.4s ease;
+        .column-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
+        .task-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        /* ==========================================
+           4. تصميم كارت المهمة وتأثيرات الأنيميشن
+           ========================================== */
         .card {
             background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius-md);
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            transition: var(--transition);
+            animation: slideIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
-        .line {
-            background: var(--line-color);
+        .card:hover {
+            transform: translateY(-4px);
+            border-color: var(--primary);
+            box-shadow: 0 10px 20px -5px var(--primary-glow);
         }
 
-        .glow-btn {
-            --glow-color: rgb(217, 176, 255);
-            --glow-spread-color: rgba(191, 123, 255, 0.781);
-            --btn-color: rgb(100, 61, 136);
-            border: .25em solid var(--glow-color);
-            padding: 0.8em 2em;
-            color: var(--glow-color);
-            font-size: 14px;
-            font-weight: bold;
-            background-color: var(--btn-color);
-            border-radius: 1em;
-            outline: none;
-            box-shadow: 0 0 1em .25em var(--glow-color),
-            0 0 4em 1em var(--glow-spread-color),
-            inset 0 0 .75em .25em var(--glow-color);
-            text-shadow: 0 0 .5em var(--glow-color);
-            position: relative;
-            transition: all 0.3s;
+        .card-body {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .card-checkbox {
+            width: 20px;
+            height: 20px;
+            accent-color: var(--primary);
             cursor: pointer;
+            margin-top: 2px;
+            transition: transform 0.2s ease;
         }
 
-        body.light-mode .glow-btn {
-            --glow-color: #7d2ae8;
-            --glow-spread-color: rgba(125, 42, 232, 0.4);
-            --btn-color: #f0e6ff;
-            color: #7d2ae8;
-            text-shadow: none;
+        .card-checkbox:hover {
+            transform: scale(1.15);
         }
 
+        .card-text {
+            flex: 1;
+            font-size: 0.95rem;
+            line-height: 1.4;
+            color: var(--text-main);
+            word-break: break-word;
+            transition: var(--transition);
+        }
+
+        .completed .card-text {
+            text-decoration: line-through;
+            color: var(--text-muted);
+            opacity: 0.7;
+        }
+
+        .card-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 6px;
+            padding-top: 0.5rem;
+            border-top: 1px dashed var(--card-border);
+        }
+
+        /* Action Buttons */
+        .btn-icon {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            padding: 6px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-icon:hover {
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--text-main);
+            transform: scale(1.1);
+        }
+
+        .btn-icon.delete:hover {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--danger);
+        }
+
+        .btn-icon.edit:hover {
+            background: var(--primary-glow);
+            color: var(--primary);
+        }
+
+        /* Modal Custom Style */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.65);
+            backdrop-filter: blur(5px);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: var(--surface-color);
+            border: 1px solid var(--card-border);
+            padding: 1.5rem;
+            border-radius: var(--radius-lg);
+            width: 90%;
+            max-width: 450px;
+            box-shadow: var(--shadow);
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .modal-title {
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+        }
+
+        .modal-input {
+            width: 100%;
+            padding: 0.8rem;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--card-border);
+            background: var(--bg-color);
+            color: var(--text-main);
+            outline: none;
+            margin-bottom: 1.2rem;
+            font-size: 1rem;
+            transition: var(--transition);
+        }
+
+        .modal-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-glow);
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .modal-btn {
+            padding: 0.6rem 1.2rem;
+            border-radius: var(--radius-md);
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: var(--transition);
+        }
+
+        .modal-btn.cancel {
+            background: transparent;
+            color: var(--text-muted);
+        }
+
+        .modal-btn.cancel:hover {
+            color: var(--text-main);
+        }
+
+        .modal-btn.save {
+            background: var(--primary);
+            color: #fff;
+        }
+
+        .modal-btn.save:hover {
+            background: var(--primary-hover);
+        }
+
+        /* ==========================================
+           5. مصفوفة الأنيميشن (Keyframes)
+           ========================================== */
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        @keyframes popIn {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
+        }
+
+        /* Responsive Breakpoints */
         @media (max-width: 768px) {
-            .listis {
-                flex-direction: column;
-                align-items: center;
-                gap: 30px;
+            .board {
+                grid-template-columns: 1fr;
             }
-
-            .line {
-                width: 80%;
-                height: 2px;
+            .column {
                 min-height: auto;
-                margin: 10px 0;
-            }
-
-            .card {
-                max-width: 100%;
-                width: 90vw;
-            }
-
-            .del-btn, .edit-btn, .done-btn, .not_done-btn {
-                padding: 6px 10px;
-                font-size: 11px;
-            }
-
-            .title {
-                width: 90%;
-                font-size: 20px;
-                padding: 15px;
-            }
-
-            .glow-btn {
-                padding: 0.6em 1.2em;
-                font-size: 12px;
             }
         }
     </style>
 </head>
 <body>
 
-<button id="theme-toggle" class="glow-btn">
-    <span id="theme-icon">🌙</span> <span id="theme-text">Dark Mode</span>
-</button>
-<div class="to_doo">
-    <h1 class="title" id="title">To do list 📝 <p style="font-size: small">click me </p> </h1>
-    <div class="create-wrapper">
-        <button id="cre" class="create-btn">+ Create Task</button>
+<div class="container">
+    <!-- Top Bar Controls -->
+    <div class="top-bar">
+        <div class="controls-group">
+            <button id="theme-toggle" class="theme-toggle-btn">
+                <span id="theme-icon">🌙</span>
+                <span id="theme-text">الوضع الداكن</span>
+            </button>
+            <button id="palette-btn" class="palette-btn" title="تغيير ألوان الموقع">
+                🎨 الألوان
+            </button>
+            <!-- Palette Selector Dropdown -->
+            <div id="palette-menu" class="color-palette-menu">
+                <div class="color-dot active" style="background: #8b5cf6;" data-theme-value="default" title="بنفسجي"></div>
+                <div class="color-dot" style="background: #0284c7;" data-theme-value="ocean" title="أزرق"></div>
+                <div class="color-dot" style="background: #10b981;" data-theme-value="emerald" title="أخضر"></div>
+                <div class="color-dot" style="background: #f43f5e;" data-theme-value="rose" title="وردي"></div>
+            </div>
+        </div>
+
+        <div class="stats-badge">
+            المهام المتبقية: <span id="pending-count">0</span>
+        </div>
+    </div>
+
+    <!-- Header Section -->
+    <header>
+        <h1 class="main-title" id="title">To Do List 📝</h1>
+        <p class="author-subtitle">اضغط على العنوان لمعرفة المطور</p>
+    </header>
+
+    <!-- Action Bar -->
+    <div class="actions-bar">
+        <button id="open-modal-btn" class="create-btn">
+            <span>+</span> إضافة مهمة جديدة
+        </button>
+    </div>
+
+    <!-- Task Board Columns -->
+    <div class="board">
+        <!-- Column 1: Pending Tasks -->
+        <div class="column">
+            <div class="column-header">
+                <h2 class="column-title">⏳ قيد الانتظار</h2>
+            </div>
+            <div class="task-list" id="tasks"></div>
+        </div>
+
+        <!-- Column 2: Completed Tasks -->
+        <div class="column">
+            <div class="column-header">
+                <h2 class="column-title">✅ المكتملة</h2>
+            </div>
+            <div class="task-list" id="completed"></div>
+        </div>
     </div>
 </div>
 
-<div class="listis">
-    <!-- العمود الأول: Not Completed -->
-    <div class="com">
-        <h1 class="title2">not completed</h1>
-        <div class="tasks" id="tasks"></div>
-    </div>
-
-    <!-- الخط الفاصل -->
-    <div class="line"></div>
-
-    <!-- العمود الثاني: Completed -->
-    <div class="com">
-        <h1 class="title3">Completed</h1>
-        <div id="completed"></div>
+<!-- Modal Dialog -->
+<div class="modal" id="task-modal">
+    <div class="modal-content">
+        <h3 class="modal-title" id="modal-heading">إضافة مهمة جديدة</h3>
+        <input type="text" id="modal-input" class="modal-input" placeholder="اكتب تفاصيل المهمة..." />
+        <div class="modal-actions">
+            <button class="modal-btn cancel" id="close-modal-btn">إلغاء</button>
+            <button class="modal-btn save" id="save-task-btn">حفظ</button>
+        </div>
     </div>
 </div>
 
 <script>
-    const cre = document.getElementById("cre");
-    const title = document.getElementById("title");
-    const tasks = document.getElementById("tasks");
-    const completedSection = document.getElementById("completed");
-
-    // مصفوفة حفظ كافة المهام
+    // State Management
     let allTasks = JSON.parse(localStorage.getItem('my_tasks')) || [];
+    let editingTaskId = null;
 
+    // DOM Elements
+    const tasksContainer = document.getElementById("tasks");
+    const completedContainer = document.getElementById("completed");
+    const title = document.getElementById("title");
+    const pendingCount = document.getElementById("pending-count");
+
+    // Modal Elements
+    const modal = document.getElementById("task-modal");
+    const modalInput = document.getElementById("modal-input");
+    const openModalBtn = document.getElementById("open-modal-btn");
+    const closeModalBtn = document.getElementById("close-modal-btn");
+    const saveTaskBtn = document.getElementById("save-task-btn");
+    const modalHeading = document.getElementById("modal-heading");
+
+    // Palette & Theme Elements
+    const paletteBtn = document.getElementById("palette-btn");
+    const paletteMenu = document.getElementById("palette-menu");
+    const colorDots = document.querySelectorAll(".color-dot");
+
+    // Title Toggle Author Name
     if (title) {
-        title.addEventListener("click", function () {
-            title.innerHTML = "by Hamza Mohamed";
+        title.addEventListener("click", () => {
+            title.textContent = title.textContent === "by Hamza Mohamed" ? "To Do List 📝" : "by Hamza Mohamed";
         });
     }
 
-    // دالة لحفظ حالة المصفوفة في LocalStorage
-    function saveToLocalStorage() {
+    // Save tasks to LocalStorage and update counts
+    function updateState() {
         localStorage.setItem('my_tasks', JSON.stringify(allTasks));
+        const pending = allTasks.filter(t => !t.isCompleted).length;
+        pendingCount.textContent = pending;
     }
 
-    // دالة لبناء الكارت وحقنه في DOM
-    function renderTaskCard(taskObj) {
-        const codeDiv = document.createElement('div');
-        codeDiv.classList.add('task-item');
+    // Render Single Card
+    function createCardElement(taskObj) {
+        const card = document.createElement('div');
+        card.className = `card ${taskObj.isCompleted ? 'completed' : ''}`;
 
-        codeDiv.innerHTML = `
-            <div class="card">
-              <div class="img"></div>
-              <div class="textBox">
-                <div class="textContent">
-                  <p class="h1 note_to_ed">${taskObj.text}</p>
-                </div>
-              </div>
+        card.innerHTML = `
+            <div class="card-body">
+                <input type="checkbox" class="card-checkbox" ${taskObj.isCompleted ? 'checked' : ''}>
+                <p class="card-text">${escapeHtml(taskObj.text)}</p>
             </div>
-            <div class="btn-group">
-              <button class="del-btn">delete</button>
-              <button class="edit-btn">change note</button>
-              <button class="done-btn">completed</button>
-              <button class="not_done-btn">n't completed</button>
+            <div class="card-footer">
+                <button class="btn-icon edit" title="تعديل">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                </button>
+                <button class="btn-icon delete" title="حذف">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                </button>
             </div>
         `;
 
-        const delBtn = codeDiv.querySelector(".del-btn");
-        const editBtn = codeDiv.querySelector(".edit-btn");
-        const doneBtn = codeDiv.querySelector(".done-btn");
-        const notDoneBtn = codeDiv.querySelector(".not_done-btn");
-        const noteText = codeDiv.querySelector(".note_to_ed");
-
-        // ضبط حالة الأزرار حسب اكتمال المهمة
-        if (taskObj.isCompleted) {
-            doneBtn.style.display = "none";
-            notDoneBtn.style.display = "inline-block";
-            completedSection.appendChild(codeDiv);
-        } else {
-            notDoneBtn.style.display = "none";
-            doneBtn.style.display = "inline-block";
-            tasks.appendChild(codeDiv);
-        }
-
-        // 1. زر الحذف
-        delBtn.addEventListener("click", function () {
-            codeDiv.remove();
-            allTasks = allTasks.filter(t => t.id !== taskObj.id);
-            saveToLocalStorage();
+        // Checkbox Event
+        const checkbox = card.querySelector('.card-checkbox');
+        checkbox.addEventListener('change', () => {
+            taskObj.isCompleted = checkbox.checked;
+            updateState();
+            renderTasks();
         });
 
-        // 2. زر التعديل
-        editBtn.addEventListener("click", function () {
-            let newNote = prompt("اكتب الملاحظة الجديدة:", noteText.textContent);
-            if (newNote && newNote.trim() !== "") {
-                noteText.textContent = newNote.trim();
-                taskObj.text = newNote.trim();
-                saveToLocalStorage();
+        // Delete Event
+        const deleteBtn = card.querySelector('.btn-icon.delete');
+        deleteBtn.addEventListener('click', () => {
+            card.style.transform = 'scale(0.8)';
+            card.style.opacity = '0';
+            setTimeout(() => {
+                allTasks = allTasks.filter(t => t.id !== taskObj.id);
+                updateState();
+                renderTasks();
+            }, 200);
+        });
+
+        // Edit Event
+        const editBtn = card.querySelector('.btn-icon.edit');
+        editBtn.addEventListener('click', () => {
+            editingTaskId = taskObj.id;
+            modalInput.value = taskObj.text;
+            modalHeading.textContent = "تعديل المهمة";
+            openModal();
+        });
+
+        return card;
+    }
+
+    // Render All Tasks
+    function renderTasks() {
+        tasksContainer.innerHTML = '';
+        completedContainer.innerHTML = '';
+
+        allTasks.forEach(task => {
+            const cardElement = createCardElement(task);
+            if (task.isCompleted) {
+                completedContainer.appendChild(cardElement);
+            } else {
+                tasksContainer.appendChild(cardElement);
             }
         });
 
-        // 3. زر نقل إلى Completed
-        doneBtn.addEventListener("click", function () {
-            completedSection.appendChild(codeDiv);
-            doneBtn.style.display = "none";
-            notDoneBtn.style.display = "inline-block";
-            taskObj.isCompleted = true;
-            saveToLocalStorage();
-        });
-
-        // 4. زر الإرجاع إلى Not Completed
-        notDoneBtn.addEventListener("click", function () {
-            tasks.appendChild(codeDiv);
-            notDoneBtn.style.display = "none";
-            doneBtn.style.display = "inline-block";
-            taskObj.isCompleted = false;
-            saveToLocalStorage();
-        });
+        updateState();
     }
 
-    // تحميل وتوليد العناصر القديمة عند فتح الصفحة
-    function loadSavedTasks() {
-        allTasks.forEach(task => renderTaskCard(task));
+    // Modal Handlers
+    function openModal() {
+        modal.style.display = 'flex';
+        modalInput.focus();
     }
 
-    // إضافة مهمة جديدة
-    cre.addEventListener("click", function () {
-        let taskText = prompt("اكتب الملاحظة الجديدة:");
-        if (!taskText || taskText.trim() === "") return;
+    function closeModal() {
+        modal.style.display = 'none';
+        modalInput.value = '';
+        editingTaskId = null;
+        modalHeading.textContent = "إضافة مهمة جديدة";
+    }
 
-        const newTask = {
-            id: Date.now(), // معرف فريد للمهمة
-            text: taskText.trim(),
-            isCompleted: false
-        };
+    openModalBtn.addEventListener('click', openModal);
+    closeModalBtn.addEventListener('click', closeModal);
 
-        allTasks.push(newTask);
-        saveToLocalStorage();
-        renderTaskCard(newTask);
+    saveTaskBtn.addEventListener('click', () => {
+        const val = modalInput.value.trim();
+        if (!val) return;
+
+        if (editingTaskId) {
+            const task = allTasks.find(t => t.id === editingTaskId);
+            if (task) task.text = val;
+        } else {
+            allTasks.push({
+                id: Date.now(),
+                text: val,
+                isCompleted: false
+            });
+        }
+
+        updateState();
+        renderTasks();
+        closeModal();
     });
 
-    // Dark / Light Mode Toggle
+    // Enter Key on Modal
+    modalInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') saveTaskBtn.click();
+    });
+
+    // Color Palette Toggle Menu
+    paletteBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        paletteMenu.classList.toggle("show");
+    });
+
+    document.addEventListener("click", () => {
+        paletteMenu.classList.remove("show");
+    });
+
+    // Color Theme Switching
+    colorDots.forEach(dot => {
+        dot.addEventListener("click", () => {
+            const themeValue = dot.getAttribute("data-theme-value");
+
+            colorDots.forEach(d => d.classList.remove("active"));
+            dot.classList.add("active");
+
+            if (themeValue === "default") {
+                document.documentElement.removeAttribute("data-theme");
+            } else {
+                document.documentElement.setAttribute("data-theme", themeValue);
+            }
+
+            localStorage.setItem("selected_theme", themeValue);
+        });
+    });
+
+    // Load Saved Theme
+    const savedTheme = localStorage.getItem("selected_theme");
+    if (savedTheme && savedTheme !== "default") {
+        document.documentElement.setAttribute("data-theme", savedTheme);
+        colorDots.forEach(dot => {
+            dot.classList.toggle("active", dot.getAttribute("data-theme-value") === savedTheme);
+        });
+    }
+
+    // Dark/Light Theme Handler
     const themeToggleBtn = document.getElementById("theme-toggle");
     const themeIcon = document.getElementById("theme-icon");
     const themeText = document.getElementById("theme-text");
 
-    if (themeToggleBtn) {
-        themeToggleBtn.addEventListener("click", function () {
-            document.body.classList.toggle("light-mode");
+    themeToggleBtn.addEventListener("click", () => {
+        document.body.classList.toggle("light-mode");
+        const isLight = document.body.classList.contains("light-mode");
+        themeIcon.textContent = isLight ? "☀️" : "🌙";
+        themeText.textContent = isLight ? "الوضع الفاتح" : "الوضع الداكن";
+    });
 
-            if (document.body.classList.contains("light-mode")) {
-                themeIcon.textContent = "☀️";
-                themeText.textContent = "Light Mode";
-            } else {
-                themeIcon.textContent = "🌙";
-                themeText.textContent = "Dark Mode";
-            }
-        });
+    // Utility: Prevent HTML Injection
+    function escapeHtml(str) {
+        return str.replace(/[&<>"']/g, (m) => ({
+            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
+        }[m]));
     }
 
-    // تشغيل استرجاع المهام فور تحميل الصفحة
-    loadSavedTasks();
+    // Initialize Page
+    renderTasks();
 </script>
 </body>
 </html>
