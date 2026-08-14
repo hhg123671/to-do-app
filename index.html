@@ -9,8 +9,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-
-    <!-- Google Identity Services -->
+    
+    <!-- Google Identity Services Script -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
 
     <style>
@@ -21,7 +21,7 @@
             --primary: #8b5cf6;
             --primary-hover: #7c3aed;
             --primary-glow: rgba(139, 92, 246, 0.35);
-
+            
             --bg-color: #0f172a;
             --surface-color: #1e293b;
             --card-bg: #334155;
@@ -31,7 +31,7 @@
             --success: #10b981;
             --danger: #ef4444;
             --warning: #f59e0b;
-
+            
             --radius-lg: 16px;
             --radius-md: 10px;
             --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
@@ -436,7 +436,7 @@
 <body>
 
 <div class="container">
-    <!-- Control Buttons -->
+    <!-- Top Controls Bar -->
     <div class="top-bar">
         <div class="controls-group">
             <button id="theme-toggle" class="theme-toggle-btn">
@@ -445,7 +445,7 @@
             </button>
             <button id="palette-btn" class="palette-btn" title="تغيير الألوان">🎨 الألوان</button>
             <button id="drive-auth-btn" class="drive-auth-btn">📁 ربط Google Drive</button>
-
+            
             <div id="palette-menu" class="color-palette-menu">
                 <div class="color-dot active" style="background: #8b5cf6;" data-theme-value="default"></div>
                 <div class="color-dot" style="background: #0284c7;" data-theme-value="ocean"></div>
@@ -471,7 +471,7 @@
         </button>
     </div>
 
-    <!-- Task Columns -->
+    <!-- Tasks Board Columns -->
     <div class="board">
         <div class="column">
             <div class="column-header"><h2 class="column-title">⏳ قيد الانتظار</h2></div>
@@ -485,11 +485,11 @@
     </div>
 </div>
 
-<!-- Add/Edit Modal -->
+<!-- Modal Dialog -->
 <div class="modal" id="task-modal">
     <div class="modal-content">
         <h3 class="modal-title" id="modal-heading">إضافة مهمة جديدة</h3>
-
+        
         <div class="form-group">
             <label class="form-label">تفاصيل المهمة</label>
             <input type="text" id="modal-input" class="modal-input" placeholder="اكتب تفاصيل المهمة..." />
@@ -522,12 +522,13 @@
        Google Drive API Config
        ========================================================= */
     const CLIENT_ID = 'ضع_هنا_CLIENT_ID_الخاص_بك';
+    const API_KEY = 'ضع_هنا_API_KEY_الخاص_بك';
     const SCOPES = 'https://www.googleapis.com/auth/drive.file';
 
     let tokenClient;
     let accessToken = null;
 
-    // State Variables
+    // App State Variables
     let allTasks = JSON.parse(localStorage.getItem('my_tasks_v2')) || [];
     let editingTaskId = null;
     let pendingUploadedFiles = [];
@@ -539,7 +540,7 @@
     const pendingCount = document.getElementById("pending-count");
     const driveAuthBtn = document.getElementById("drive-auth-btn");
 
-    // Modal DOM
+    // Modal DOM Elements
     const modal = document.getElementById("task-modal");
     const modalInput = document.getElementById("modal-input");
     const modalPriority = document.getElementById("modal-priority");
@@ -549,21 +550,21 @@
     const saveTaskBtn = document.getElementById("save-task-btn");
     const modalHeading = document.getElementById("modal-heading");
 
-    // Theme & Palette DOM
+    // Theme Elements
     const paletteBtn = document.getElementById("palette-btn");
     const paletteMenu = document.getElementById("palette-menu");
     const colorDots = document.querySelectorAll(".color-dot");
 
-    // Author Name Toggle
+    // Author Toggle
     if (title) {
         title.addEventListener("click", () => {
             title.textContent = title.textContent === "by Hamza Mohamed" ? "To Do List 📝" : "by Hamza Mohamed";
         });
     }
 
-    // Google Identity Service Safe Init
+    // Google Identity Service Safe Initialization
     function initGoogleDrive() {
-        if (typeof google !== 'undefined' && google.accounts) {
+        if (typeof google !== 'undefined' && google.accounts && google.accounts.oauth2) {
             tokenClient = google.accounts.oauth2.initTokenClient({
                 client_id: CLIENT_ID,
                 scope: SCOPES,
@@ -583,15 +584,17 @@
     });
 
     driveAuthBtn.addEventListener('click', () => {
-        if (!tokenClient) initGoogleDrive();
+        if (!tokenClient) {
+            initGoogleDrive();
+        }
         if (tokenClient) {
             tokenClient.requestAccessToken({ prompt: 'consent' });
         } else {
-            alert("جاري تحميل مكتبة جوجل، يُرجى المحاولة بعد قليل.");
+            alert("تأكد من إدخال CLIENT_ID صحيح وبدء الموقع عبر Live Server.");
         }
     });
 
-    // Save and Update State
+    // Local Storage & Stats Handler
     function updateState() {
         localStorage.setItem('my_tasks_v2', JSON.stringify(allTasks));
         const pending = allTasks.filter(t => !t.isCompleted).length;
@@ -634,7 +637,7 @@
         return `<div class="attachments-list">${itemsHtml}</div>`;
     }
 
-    // Render Single Card
+    // Render Single Task Card Element
     function createCardElement(taskObj) {
         const card = document.createElement('div');
         card.className = `card ${taskObj.isCompleted ? 'completed' : ''}`;
@@ -667,7 +670,7 @@
             </div>
         `;
 
-        // Checkbox Click
+        // Task Status Listener
         card.querySelector('.checkbox').addEventListener('change', (e) => {
             setTimeout(() => {
                 taskObj.isCompleted = e.target.checked;
@@ -676,7 +679,7 @@
             }, 250);
         });
 
-        // Delete Single Attachment
+        // Delete File Attachment Listener
         card.querySelectorAll('.delete-file').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const index = e.currentTarget.getAttribute('data-file-index');
@@ -706,7 +709,7 @@
         return card;
     }
 
-    // Render Tasks Board
+    // Render All Tasks
     function renderTasks() {
         tasksContainer.innerHTML = '';
         completedContainer.innerHTML = '';
@@ -723,7 +726,7 @@
         updateState();
     }
 
-    // File Selection Handler
+    // File Input Upload Logic
     modalFileInput.addEventListener('change', async (e) => {
         const files = Array.from(e.target.files);
         if (!files.length) return;
@@ -742,14 +745,14 @@
                         body: form
                     });
                     const driveFile = await res.json();
-
+                    
                     pendingUploadedFiles.push({
                         name: file.name,
                         url: driveFile.webContentLink || driveFile.webViewLink,
                         driveId: driveFile.id
                     });
                 } catch (err) {
-                    console.error("خطأ في رفع الملف لـ Google Drive:", err);
+                    console.error("خطأ في الرفع على Google Drive:", err);
                 }
             } else {
                 const reader = new FileReader();
@@ -764,7 +767,7 @@
         }
     });
 
-    // Modal Control
+    // Modal Control Logic
     function openModal() { modal.style.display = 'flex'; modalInput.focus(); }
     function closeModal() {
         modal.style.display = 'none';
@@ -805,7 +808,7 @@
         closeModal();
     });
 
-    // Palette & Theme Switching
+    // Theme & Color Palette Menu Options
     paletteBtn.addEventListener("click", (e) => { e.stopPropagation(); paletteMenu.classList.toggle("show"); });
     document.addEventListener("click", () => paletteMenu.classList.remove("show"));
 
@@ -822,7 +825,7 @@
         });
     });
 
-    // Dark/Light Mode
+    // Toggle Dark / Light Mode
     const themeToggleBtn = document.getElementById("theme-toggle");
     themeToggleBtn.addEventListener("click", () => {
         document.body.classList.toggle("light-mode");
@@ -835,7 +838,7 @@
         return str.replace(/[&<>"']/g, (m) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m]));
     }
 
-    // Initialize App
+    // App Initialization
     renderTasks();
 </script>
 </body>
