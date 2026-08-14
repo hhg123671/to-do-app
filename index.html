@@ -3,19 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>To Do List | قائمة المهام</title>
+    <title>To Do List | قائمة المهام الشاملة</title>
     <link rel="shortcut icon" href="logo.png" type="image/x-icon">
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 
+    <!-- Google Identity Services -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+
     <style>
         /* ==========================================
            1. متغيرات الألوان والثيمات (Color Themes)
            ========================================== */
         :root {
-            /* Theme Default: Violet */
             --primary: #8b5cf6;
             --primary-hover: #7c3aed;
             --primary-glow: rgba(139, 92, 246, 0.35);
@@ -28,34 +30,32 @@
             --text-muted: #94a3b8;
             --success: #10b981;
             --danger: #ef4444;
+            --warning: #f59e0b;
+
             --radius-lg: 16px;
             --radius-md: 10px;
             --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
             --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        /* الثيم الأزرق - Ocean */
         [data-theme="ocean"] {
             --primary: #0284c7;
             --primary-hover: #0369a1;
             --primary-glow: rgba(2, 132, 199, 0.35);
         }
 
-        /* الثيم الأخضر - Emerald */
         [data-theme="emerald"] {
             --primary: #10b981;
             --primary-hover: #059669;
             --primary-glow: rgba(16, 185, 129, 0.35);
         }
 
-        /* الثيم الوردي - Rose */
         [data-theme="rose"] {
             --primary: #f43f5e;
             --primary-hover: #e11d48;
             --primary-glow: rgba(244, 63, 94, 0.35);
         }
 
-        /* الوضع الفاتح - Light Mode */
         body.light-mode {
             --bg-color: #f1f5f9;
             --surface-color: #ffffff;
@@ -87,9 +87,7 @@
             margin: 0 auto;
         }
 
-        /* ==========================================
-           2. شريط التحكم الأعلى والقائمة التفاعلية
-           ========================================== */
+        /* Top Bar Controls */
         .top-bar {
             display: flex;
             justify-content: space-between;
@@ -103,9 +101,10 @@
             display: flex;
             align-items: center;
             gap: 10px;
+            position: relative;
         }
 
-        .theme-toggle-btn, .palette-btn {
+        .theme-toggle-btn, .palette-btn, .drive-auth-btn {
             background: var(--surface-color);
             border: 1px solid var(--card-border);
             color: var(--text-main);
@@ -120,17 +119,22 @@
             transition: var(--transition);
         }
 
-        .theme-toggle-btn:hover, .palette-btn:hover {
+        .theme-toggle-btn:hover, .palette-btn:hover, .drive-auth-btn:hover {
             transform: translateY(-2px);
             border-color: var(--primary);
         }
 
-        /* قائمة اختيار الألوان */
+        .drive-auth-btn.connected {
+            border-color: var(--success);
+            color: var(--success);
+        }
+
+        /* Palette Menu */
         .color-palette-menu {
             display: none;
             position: absolute;
-            top: 60px;
-            right: 1rem;
+            top: 50px;
+            right: 0;
             background: var(--surface-color);
             border: 1px solid var(--card-border);
             padding: 0.8rem;
@@ -138,12 +142,9 @@
             box-shadow: var(--shadow);
             gap: 10px;
             z-index: 100;
-            animation: popIn 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
-        .color-palette-menu.show {
-            display: flex;
-        }
+        .color-palette-menu.show { display: flex; }
 
         .color-dot {
             width: 28px;
@@ -154,25 +155,15 @@
             transition: var(--transition);
         }
 
-        .color-dot:hover {
-            transform: scale(1.2);
-        }
+        .color-dot:hover { transform: scale(1.2); }
+        .color-dot.active { border-color: var(--text-main); transform: scale(1.15); }
 
-        .color-dot.active {
-            border-color: var(--text-main);
-            transform: scale(1.15);
-        }
-
-        /* Header Section */
-        header {
-            text-align: center;
-            margin-bottom: 2.5rem;
-        }
+        /* Header */
+        header { text-align: center; margin-bottom: 2.5rem; }
 
         .main-title {
             font-size: 2.5rem;
             font-weight: 700;
-            letter-spacing: -0.02em;
             background: linear-gradient(135deg, var(--text-main), var(--primary));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -183,14 +174,7 @@
             animation: float 4s ease-in-out infinite;
         }
 
-        .main-title:hover {
-            transform: scale(1.03);
-        }
-
-        .author-subtitle {
-            font-size: 0.85rem;
-            color: var(--text-muted);
-        }
+        .author-subtitle { font-size: 0.85rem; color: var(--text-muted); }
 
         /* Actions Bar */
         .actions-bar {
@@ -216,18 +200,11 @@
             gap: 8px;
             box-shadow: 0 4px 14px var(--primary-glow);
             transition: var(--transition);
-            position: relative;
-            overflow: hidden;
         }
 
         .create-btn:hover {
             background: var(--primary-hover);
-            transform: translateY(-3px) scale(1.02);
-            box-shadow: 0 8px 22px var(--primary-glow);
-        }
-
-        .create-btn:active {
-            transform: translateY(-1px) scale(0.98);
+            transform: translateY(-3px);
         }
 
         .stats-badge {
@@ -239,14 +216,9 @@
             color: var(--text-muted);
         }
 
-        .stats-badge span {
-            color: var(--primary);
-            font-weight: 700;
-        }
+        .stats-badge span { color: var(--primary); font-weight: 700; }
 
-        /* ==========================================
-           3. التنسيقات والأعمدة (Board & Columns)
-           ========================================== */
+        /* Board & Columns */
         .board {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -261,7 +233,6 @@
             padding: 1.5rem;
             box-shadow: var(--shadow);
             min-height: 450px;
-            transition: var(--transition);
         }
 
         .column-header {
@@ -273,23 +244,10 @@
             border-bottom: 2px solid var(--card-border);
         }
 
-        .column-title {
-            font-size: 1.1rem;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
+        .column-title { font-size: 1.1rem; font-weight: 700; }
+        .task-list { display: flex; flex-direction: column; gap: 1rem; }
 
-        .task-list {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
-
-        /* ==========================================
-           4. تصميم كارت المهمة وتأثيرات الأنيميشن
-           ========================================== */
+        /* Cards Layout */
         .card {
             background: var(--card-bg);
             border: 1px solid var(--card-border);
@@ -308,24 +266,20 @@
             box-shadow: 0 10px 20px -5px var(--primary-glow);
         }
 
-        .card-body {
-            display: flex;
-            align-items: flex-start;
-            gap: 12px;
+        .card-header-info { display: flex; justify-content: space-between; align-items: center; }
+
+        .priority-badge {
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 0.25rem 0.6rem;
+            border-radius: 20px;
         }
 
-        .card-checkbox {
-            width: 20px;
-            height: 20px;
-            accent-color: var(--primary);
-            cursor: pointer;
-            margin-top: 2px;
-            transition: transform 0.2s ease;
-        }
+        .priority-high { background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); }
+        .priority-medium { background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); }
+        .priority-low { background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); }
 
-        .card-checkbox:hover {
-            transform: scale(1.15);
-        }
+        .card-body { display: flex; align-items: center; gap: 12px; }
 
         .card-text {
             flex: 1;
@@ -333,14 +287,63 @@
             line-height: 1.4;
             color: var(--text-main);
             word-break: break-word;
-            transition: var(--transition);
         }
 
-        .completed .card-text {
-            text-decoration: line-through;
-            color: var(--text-muted);
-            opacity: 0.7;
+        .completed .card-text { text-decoration: line-through; color: var(--text-muted); opacity: 0.7; }
+
+        /* Attachment Items Layout */
+        .attachments-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-top: 0.2rem;
         }
+
+        .attachment-item {
+            padding: 0.5rem 0.75rem;
+            background: rgba(0, 0, 0, 0.15);
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            font-size: 0.82rem;
+        }
+
+        .file-icon-badge {
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            background: var(--surface-color);
+            border: 1px solid var(--card-border);
+            text-transform: uppercase;
+        }
+
+        .attachment-name {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 180px;
+            flex: 1;
+        }
+
+        .attachment-actions { display: flex; align-items: center; gap: 4px; }
+
+        .btn-attachment-action {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            padding: 4px;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+        }
+
+        .btn-attachment-action:hover { color: var(--primary); background: rgba(255, 255, 255, 0.1); }
 
         .card-footer {
             display: flex;
@@ -350,7 +353,6 @@
             border-top: 1px dashed var(--card-border);
         }
 
-        /* Action Buttons */
         .btn-icon {
             background: transparent;
             border: none;
@@ -364,30 +366,26 @@
             justify-content: center;
         }
 
-        .btn-icon:hover {
-            background: rgba(255, 255, 255, 0.08);
-            color: var(--text-main);
-            transform: scale(1.1);
-        }
+        .btn-icon:hover { background: rgba(255, 255, 255, 0.08); color: var(--text-main); }
+        .btn-icon.delete:hover { background: rgba(239, 68, 68, 0.15); color: var(--danger); }
+        .btn-icon.edit:hover { background: var(--primary-glow); color: var(--primary); }
 
-        .btn-icon.delete:hover {
-            background: rgba(239, 68, 68, 0.15);
-            color: var(--danger);
-        }
-
-        .btn-icon.edit:hover {
-            background: var(--primary-glow);
-            color: var(--primary);
-        }
+        /* Uiverse Checkbox Flip Animation */
+        .checkbox-container { display: flex; justify-content: center; align-items: center; flex-shrink: 0; }
+        .checkbox { display: none; }
+        .checkbox-label { position: relative; display: inline-flex; align-items: center; cursor: pointer; }
+        .checkbox-flip { width: 34px; height: 34px; perspective: 1000px; display: flex; justify-content: center; align-items: center; position: relative; transition: transform 0.4s ease; }
+        .checkbox-front, .checkbox-back { width: 100%; height: 100%; position: absolute; display: flex; justify-content: center; align-items: center; border-radius: 8px; backface-visibility: hidden; transition: transform 0.3s ease; }
+        .checkbox-front { background: linear-gradient(135deg, #ff6347, #f76c6c); transform: rotateY(0deg); }
+        .checkbox-back { background: linear-gradient(135deg, #36b54a, #00c1d4); transform: rotateY(180deg); }
+        .checkbox:checked + .checkbox-label .checkbox-front { transform: rotateY(180deg); }
+        .checkbox:checked + .checkbox-label .checkbox-back { transform: rotateY(0deg); }
 
         /* Modal Custom Style */
         .modal {
             display: none;
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0, 0, 0, 0.65);
             backdrop-filter: blur(5px);
             justify-content: center;
@@ -401,17 +399,16 @@
             padding: 1.5rem;
             border-radius: var(--radius-lg);
             width: 90%;
-            max-width: 450px;
+            max-width: 480px;
             box-shadow: var(--shadow);
             animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
-        .modal-title {
-            margin-bottom: 1rem;
-            font-size: 1.2rem;
-        }
+        .modal-title { margin-bottom: 1rem; font-size: 1.2rem; }
+        .form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 1.2rem; }
+        .form-label { font-size: 0.85rem; color: var(--text-muted); font-weight: 600; }
 
-        .modal-input {
+        .modal-input, .modal-select {
             width: 100%;
             padding: 0.8rem;
             border-radius: var(--radius-md);
@@ -419,109 +416,41 @@
             background: var(--bg-color);
             color: var(--text-main);
             outline: none;
-            margin-bottom: 1.2rem;
-            font-size: 1rem;
-            transition: var(--transition);
+            font-size: 0.95rem;
         }
 
-        .modal-input:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px var(--primary-glow);
-        }
+        .modal-actions { display: flex; justify-content: flex-end; gap: 10px; }
+        .modal-btn { padding: 0.6rem 1.2rem; border-radius: var(--radius-md); border: none; cursor: pointer; font-weight: 600; }
+        .modal-btn.cancel { background: transparent; color: var(--text-muted); }
+        .modal-btn.save { background: var(--primary); color: #fff; }
 
-        .modal-actions {
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-        }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(20px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        @keyframes popIn { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
 
-        .modal-btn {
-            padding: 0.6rem 1.2rem;
-            border-radius: var(--radius-md);
-            border: none;
-            cursor: pointer;
-            font-weight: 600;
-            transition: var(--transition);
-        }
-
-        .modal-btn.cancel {
-            background: transparent;
-            color: var(--text-muted);
-        }
-
-        .modal-btn.cancel:hover {
-            color: var(--text-main);
-        }
-
-        .modal-btn.save {
-            background: var(--primary);
-            color: #fff;
-        }
-
-        .modal-btn.save:hover {
-            background: var(--primary-hover);
-        }
-
-        /* ==========================================
-           5. مصفوفة الأنيميشن (Keyframes)
-           ========================================== */
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(20px) scale(0.95);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-            }
-        }
-
-        @keyframes popIn {
-            from {
-                opacity: 0;
-                transform: scale(0.8);
-            }
-            to {
-                opacity: 1;
-                transform: scale(1);
-            }
-        }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-6px); }
-        }
-
-        /* Responsive Breakpoints */
         @media (max-width: 768px) {
-            .board {
-                grid-template-columns: 1fr;
-            }
-            .column {
-                min-height: auto;
-            }
+            .board { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <!-- Top Bar Controls -->
+    <!-- Control Buttons -->
     <div class="top-bar">
         <div class="controls-group">
             <button id="theme-toggle" class="theme-toggle-btn">
                 <span id="theme-icon">🌙</span>
                 <span id="theme-text">الوضع الداكن</span>
             </button>
-            <button id="palette-btn" class="palette-btn" title="تغيير ألوان الموقع">
-                🎨 الألوان
-            </button>
-            <!-- Palette Selector Dropdown -->
+            <button id="palette-btn" class="palette-btn" title="تغيير الألوان">🎨 الألوان</button>
+            <button id="drive-auth-btn" class="drive-auth-btn">📁 ربط Google Drive</button>
+
             <div id="palette-menu" class="color-palette-menu">
-                <div class="color-dot active" style="background: #8b5cf6;" data-theme-value="default" title="بنفسجي"></div>
-                <div class="color-dot" style="background: #0284c7;" data-theme-value="ocean" title="أزرق"></div>
-                <div class="color-dot" style="background: #10b981;" data-theme-value="emerald" title="أخضر"></div>
-                <div class="color-dot" style="background: #f43f5e;" data-theme-value="rose" title="وردي"></div>
+                <div class="color-dot active" style="background: #8b5cf6;" data-theme-value="default"></div>
+                <div class="color-dot" style="background: #0284c7;" data-theme-value="ocean"></div>
+                <div class="color-dot" style="background: #10b981;" data-theme-value="emerald"></div>
+                <div class="color-dot" style="background: #f43f5e;" data-theme-value="rose"></div>
             </div>
         </div>
 
@@ -536,128 +465,240 @@
         <p class="author-subtitle">اضغط على العنوان لمعرفة المطور</p>
     </header>
 
-    <!-- Action Bar -->
     <div class="actions-bar">
         <button id="open-modal-btn" class="create-btn">
             <span>+</span> إضافة مهمة جديدة
         </button>
     </div>
 
-    <!-- Task Board Columns -->
+    <!-- Task Columns -->
     <div class="board">
-        <!-- Column 1: Pending Tasks -->
         <div class="column">
-            <div class="column-header">
-                <h2 class="column-title">⏳ قيد الانتظار</h2>
-            </div>
+            <div class="column-header"><h2 class="column-title">⏳ قيد الانتظار</h2></div>
             <div class="task-list" id="tasks"></div>
         </div>
 
-        <!-- Column 2: Completed Tasks -->
         <div class="column">
-            <div class="column-header">
-                <h2 class="column-title">✅ المكتملة</h2>
-            </div>
+            <div class="column-header"><h2 class="column-title">✅ المكتملة</h2></div>
             <div class="task-list" id="completed"></div>
         </div>
     </div>
 </div>
 
-<!-- Modal Dialog -->
+<!-- Add/Edit Modal -->
 <div class="modal" id="task-modal">
     <div class="modal-content">
         <h3 class="modal-title" id="modal-heading">إضافة مهمة جديدة</h3>
-        <input type="text" id="modal-input" class="modal-input" placeholder="اكتب تفاصيل المهمة..." />
+
+        <div class="form-group">
+            <label class="form-label">تفاصيل المهمة</label>
+            <input type="text" id="modal-input" class="modal-input" placeholder="اكتب تفاصيل المهمة..." />
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">أولوية المهمة</label>
+            <select id="modal-priority" class="modal-select">
+                <option value="high">🔴 عالي - أولوية عاجلة</option>
+                <option value="medium" selected>🟡 متوسط - أولوية عادية</option>
+                <option value="low">🟢 منخفض - أولوية غير عاجلة</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">إرفاق ملفات متعددة (Excel, PHP, Images, PDF...)</label>
+            <input type="file" id="modal-file" class="modal-input" multiple />
+            <span style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">يمكنك اختيار أكثر من ملف دفعة واحدة.</span>
+        </div>
+
         <div class="modal-actions">
             <button class="modal-btn cancel" id="close-modal-btn">إلغاء</button>
-            <button class="modal-btn save" id="save-task-btn">حفظ</button>
+            <button class="modal-btn save" id="save-task-btn">حفظ المهمة</button>
         </div>
     </div>
 </div>
 
 <script>
-    // State Management
-    let allTasks = JSON.parse(localStorage.getItem('my_tasks')) || [];
+    /* =========================================================
+       Google Drive API Config
+       ========================================================= */
+    const CLIENT_ID = 'ضع_هنا_CLIENT_ID_الخاص_بك';
+    const SCOPES = 'https://www.googleapis.com/auth/drive.file';
+
+    let tokenClient;
+    let accessToken = null;
+
+    // State Variables
+    let allTasks = JSON.parse(localStorage.getItem('my_tasks_v2')) || [];
     let editingTaskId = null;
+    let pendingUploadedFiles = [];
 
     // DOM Elements
     const tasksContainer = document.getElementById("tasks");
     const completedContainer = document.getElementById("completed");
     const title = document.getElementById("title");
     const pendingCount = document.getElementById("pending-count");
+    const driveAuthBtn = document.getElementById("drive-auth-btn");
 
-    // Modal Elements
+    // Modal DOM
     const modal = document.getElementById("task-modal");
     const modalInput = document.getElementById("modal-input");
+    const modalPriority = document.getElementById("modal-priority");
+    const modalFileInput = document.getElementById("modal-file");
     const openModalBtn = document.getElementById("open-modal-btn");
     const closeModalBtn = document.getElementById("close-modal-btn");
     const saveTaskBtn = document.getElementById("save-task-btn");
     const modalHeading = document.getElementById("modal-heading");
 
-    // Palette & Theme Elements
+    // Theme & Palette DOM
     const paletteBtn = document.getElementById("palette-btn");
     const paletteMenu = document.getElementById("palette-menu");
     const colorDots = document.querySelectorAll(".color-dot");
 
-    // Title Toggle Author Name
+    // Author Name Toggle
     if (title) {
         title.addEventListener("click", () => {
             title.textContent = title.textContent === "by Hamza Mohamed" ? "To Do List 📝" : "by Hamza Mohamed";
         });
     }
 
-    // Save tasks to LocalStorage and update counts
+    // Google Identity Service Safe Init
+    function initGoogleDrive() {
+        if (typeof google !== 'undefined' && google.accounts) {
+            tokenClient = google.accounts.oauth2.initTokenClient({
+                client_id: CLIENT_ID,
+                scope: SCOPES,
+                callback: (tokenResponse) => {
+                    if (tokenResponse && tokenResponse.access_token) {
+                        accessToken = tokenResponse.access_token;
+                        driveAuthBtn.classList.add("connected");
+                        driveAuthBtn.innerHTML = "✅ Google Drive متصل";
+                    }
+                },
+            });
+        }
+    }
+
+    window.addEventListener('load', () => {
+        setTimeout(initGoogleDrive, 1000);
+    });
+
+    driveAuthBtn.addEventListener('click', () => {
+        if (!tokenClient) initGoogleDrive();
+        if (tokenClient) {
+            tokenClient.requestAccessToken({ prompt: 'consent' });
+        } else {
+            alert("جاري تحميل مكتبة جوجل، يُرجى المحاولة بعد قليل.");
+        }
+    });
+
+    // Save and Update State
     function updateState() {
-        localStorage.setItem('my_tasks', JSON.stringify(allTasks));
+        localStorage.setItem('my_tasks_v2', JSON.stringify(allTasks));
         const pending = allTasks.filter(t => !t.isCompleted).length;
         pendingCount.textContent = pending;
+    }
+
+    function getPriorityBadge(priority) {
+        switch(priority) {
+            case 'high': return `<span class="priority-badge priority-high">🔴 عالي</span>`;
+            case 'low': return `<span class="priority-badge priority-low">🟢 منخفض</span>`;
+            default: return `<span class="priority-badge priority-medium">🟡 متوسط</span>`;
+        }
+    }
+
+    function getExtensionBadge(fileName) {
+        const ext = fileName.split('.').pop().toLowerCase();
+        return `<span class="file-icon-badge">${ext}</span>`;
+    }
+
+    function buildAttachmentsHtml(filesArray, taskId) {
+        if (!filesArray || filesArray.length === 0) return '';
+
+        const itemsHtml = filesArray.map((file, index) => `
+            <div class="attachment-item">
+                <div style="display:flex; align-items:center; gap:8px; overflow:hidden;">
+                    ${getExtensionBadge(file.name)}
+                    <span class="attachment-name" title="${escapeHtml(file.name)}">${escapeHtml(file.name)}</span>
+                </div>
+                <div class="attachment-actions">
+                    <a href="${file.url}" target="_blank" download="${file.name}" class="btn-attachment-action" title="معاينة وتحميل">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                    </a>
+                    <button class="btn-attachment-action delete-file" data-task-id="${taskId}" data-file-index="${index}" title="حذف الملف">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    </button>
+                </div>
+            </div>
+        `).join('');
+
+        return `<div class="attachments-list">${itemsHtml}</div>`;
     }
 
     // Render Single Card
     function createCardElement(taskObj) {
         const card = document.createElement('div');
         card.className = `card ${taskObj.isCompleted ? 'completed' : ''}`;
+        const checkboxId = `cb-${taskObj.id}`;
 
         card.innerHTML = `
+            <div class="card-header-info">
+                ${getPriorityBadge(taskObj.priority || 'medium')}
+            </div>
             <div class="card-body">
-                <input type="checkbox" class="card-checkbox" ${taskObj.isCompleted ? 'checked' : ''}>
+                <div class="checkbox-container">
+                  <div class="checkbox-wrapper">
+                    <input class="checkbox" id="${checkboxId}" type="checkbox" ${taskObj.isCompleted ? 'checked' : ''} />
+                    <label class="checkbox-label" for="${checkboxId}">
+                      <div class="checkbox-flip">
+                        <div class="checkbox-front"><svg fill="white" height="18" width="18" viewBox="0 0 24 24"><path d="M19 13H12V19H11V13H5V12H11V6H12V12H19V13Z"></path></svg></div>
+                        <div class="checkbox-back"><svg fill="white" height="18" width="18" viewBox="0 0 24 24"><path d="M9 19l-7-7 1.41-1.41L9 16.17l11.29-11.3L22 6l-13 13z"></path></svg></div>
+                      </div>
+                    </label>
+                  </div>
+                </div>
                 <p class="card-text">${escapeHtml(taskObj.text)}</p>
             </div>
+
+            ${buildAttachmentsHtml(taskObj.files, taskObj.id)}
+
             <div class="card-footer">
-                <button class="btn-icon edit" title="تعديل">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-                </button>
-                <button class="btn-icon delete" title="حذف">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                </button>
+                <button class="btn-icon edit" title="تعديل"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button>
+                <button class="btn-icon delete" title="حذف"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
             </div>
         `;
 
-        // Checkbox Event
-        const checkbox = card.querySelector('.card-checkbox');
-        checkbox.addEventListener('change', () => {
-            taskObj.isCompleted = checkbox.checked;
+        // Checkbox Click
+        card.querySelector('.checkbox').addEventListener('change', (e) => {
+            setTimeout(() => {
+                taskObj.isCompleted = e.target.checked;
+                updateState();
+                renderTasks();
+            }, 250);
+        });
+
+        // Delete Single Attachment
+        card.querySelectorAll('.delete-file').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const index = e.currentTarget.getAttribute('data-file-index');
+                taskObj.files.splice(index, 1);
+                updateState();
+                renderTasks();
+            });
+        });
+
+        // Delete Task
+        card.querySelector('.btn-icon.delete').addEventListener('click', () => {
+            allTasks = allTasks.filter(t => t.id !== taskObj.id);
             updateState();
             renderTasks();
         });
 
-        // Delete Event
-        const deleteBtn = card.querySelector('.btn-icon.delete');
-        deleteBtn.addEventListener('click', () => {
-            card.style.transform = 'scale(0.8)';
-            card.style.opacity = '0';
-            setTimeout(() => {
-                allTasks = allTasks.filter(t => t.id !== taskObj.id);
-                updateState();
-                renderTasks();
-            }, 200);
-        });
-
-        // Edit Event
-        const editBtn = card.querySelector('.btn-icon.edit');
-        editBtn.addEventListener('click', () => {
+        // Edit Task
+        card.querySelector('.btn-icon.edit').addEventListener('click', () => {
             editingTaskId = taskObj.id;
             modalInput.value = taskObj.text;
+            modalPriority.value = taskObj.priority || 'medium';
+            pendingUploadedFiles = taskObj.files || [];
             modalHeading.textContent = "تعديل المهمة";
             openModal();
         });
@@ -665,32 +706,72 @@
         return card;
     }
 
-    // Render All Tasks
+    // Render Tasks Board
     function renderTasks() {
         tasksContainer.innerHTML = '';
         completedContainer.innerHTML = '';
 
-        allTasks.forEach(task => {
-            const cardElement = createCardElement(task);
-            if (task.isCompleted) {
-                completedContainer.appendChild(cardElement);
-            } else {
-                tasksContainer.appendChild(cardElement);
-            }
+        const priorityWeight = { high: 3, medium: 2, low: 1 };
+        const sortedTasks = [...allTasks].sort((a, b) => priorityWeight[b.priority || 'medium'] - priorityWeight[a.priority || 'medium']);
+
+        sortedTasks.forEach(task => {
+            const cardEl = createCardElement(task);
+            if (task.isCompleted) completedContainer.appendChild(cardEl);
+            else tasksContainer.appendChild(cardEl);
         });
 
         updateState();
     }
 
-    // Modal Handlers
-    function openModal() {
-        modal.style.display = 'flex';
-        modalInput.focus();
-    }
+    // File Selection Handler
+    modalFileInput.addEventListener('change', async (e) => {
+        const files = Array.from(e.target.files);
+        if (!files.length) return;
 
+        for (let file of files) {
+            if (accessToken) {
+                try {
+                    const metadata = { name: file.name, mimeType: file.type };
+                    const form = new FormData();
+                    form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
+                    form.append('file', file);
+
+                    const res = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,webViewLink,webContentLink', {
+                        method: 'POST',
+                        headers: new Headers({ 'Authorization': 'Bearer ' + accessToken }),
+                        body: form
+                    });
+                    const driveFile = await res.json();
+
+                    pendingUploadedFiles.push({
+                        name: file.name,
+                        url: driveFile.webContentLink || driveFile.webViewLink,
+                        driveId: driveFile.id
+                    });
+                } catch (err) {
+                    console.error("خطأ في رفع الملف لـ Google Drive:", err);
+                }
+            } else {
+                const reader = new FileReader();
+                reader.onload = (evt) => {
+                    pendingUploadedFiles.push({
+                        name: file.name,
+                        url: evt.target.result
+                    });
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+    });
+
+    // Modal Control
+    function openModal() { modal.style.display = 'flex'; modalInput.focus(); }
     function closeModal() {
         modal.style.display = 'none';
         modalInput.value = '';
+        modalPriority.value = 'medium';
+        modalFileInput.value = '';
+        pendingUploadedFiles = [];
         editingTaskId = null;
         modalHeading.textContent = "إضافة مهمة جديدة";
     }
@@ -704,11 +785,17 @@
 
         if (editingTaskId) {
             const task = allTasks.find(t => t.id === editingTaskId);
-            if (task) task.text = val;
+            if (task) {
+                task.text = val;
+                task.priority = modalPriority.value;
+                task.files = pendingUploadedFiles;
+            }
         } else {
             allTasks.push({
                 id: Date.now(),
                 text: val,
+                priority: modalPriority.value,
+                files: pendingUploadedFiles,
                 isCompleted: false
             });
         }
@@ -718,68 +805,37 @@
         closeModal();
     });
 
-    // Enter Key on Modal
-    modalInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') saveTaskBtn.click();
-    });
+    // Palette & Theme Switching
+    paletteBtn.addEventListener("click", (e) => { e.stopPropagation(); paletteMenu.classList.toggle("show"); });
+    document.addEventListener("click", () => paletteMenu.classList.remove("show"));
 
-    // Color Palette Toggle Menu
-    paletteBtn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        paletteMenu.classList.toggle("show");
-    });
-
-    document.addEventListener("click", () => {
-        paletteMenu.classList.remove("show");
-    });
-
-    // Color Theme Switching
     colorDots.forEach(dot => {
         dot.addEventListener("click", () => {
             const themeValue = dot.getAttribute("data-theme-value");
-
             colorDots.forEach(d => d.classList.remove("active"));
             dot.classList.add("active");
 
-            if (themeValue === "default") {
-                document.documentElement.removeAttribute("data-theme");
-            } else {
-                document.documentElement.setAttribute("data-theme", themeValue);
-            }
+            if (themeValue === "default") document.documentElement.removeAttribute("data-theme");
+            else document.documentElement.setAttribute("data-theme", themeValue);
 
             localStorage.setItem("selected_theme", themeValue);
         });
     });
 
-    // Load Saved Theme
-    const savedTheme = localStorage.getItem("selected_theme");
-    if (savedTheme && savedTheme !== "default") {
-        document.documentElement.setAttribute("data-theme", savedTheme);
-        colorDots.forEach(dot => {
-            dot.classList.toggle("active", dot.getAttribute("data-theme-value") === savedTheme);
-        });
-    }
-
-    // Dark/Light Theme Handler
+    // Dark/Light Mode
     const themeToggleBtn = document.getElementById("theme-toggle");
-    const themeIcon = document.getElementById("theme-icon");
-    const themeText = document.getElementById("theme-text");
-
     themeToggleBtn.addEventListener("click", () => {
         document.body.classList.toggle("light-mode");
         const isLight = document.body.classList.contains("light-mode");
-        themeIcon.textContent = isLight ? "☀️" : "🌙";
-        themeText.textContent = isLight ? "الوضع الفاتح" : "الوضع الداكن";
+        document.getElementById("theme-icon").textContent = isLight ? "☀️" : "🌙";
+        document.getElementById("theme-text").textContent = isLight ? "الوضع الفاتح" : "الوضع الداكن";
     });
 
-    // Utility: Prevent HTML Injection
     function escapeHtml(str) {
-        return str.replace(/[&<>"']/g, (m) => ({
-            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
-        }[m]));
+        return str.replace(/[&<>"']/g, (m) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m]));
     }
 
-    // Initialize Page
+    // Initialize App
     renderTasks();
 </script>
 </body>
