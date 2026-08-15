@@ -12,7 +12,23 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
+<div class="dynamic-island-container">
+    <div class="dynamic-island" id="dynamic-island">
+        <div class="island-content island-collapsed">
+            <span class="island-icon" id="island-icon">📝</span>
+            <span class="island-text" id="island-text">المهام النشطة: <strong id="island-pending-count">0</strong></span>
+        </div>
+        <div class="island-content island-expanded" id="island-expanded">
+            <div class="expanded-header">
+                <span class="expanded-title">🏝️ حالة التطبيق</span>
+                <span class="expanded-badge" id="island-status-badge">مباشر</span>
+            </div>
+            <div class="expanded-body">
+                <p id="island-details-text">جميع الأنظمة تعمل بشكل ممتاز</p>
+            </div>
+        </div>
+    </div>
+</div>
 <div class="container">
     <!-- Top Controls Bar -->
     <div class="top-bar">
