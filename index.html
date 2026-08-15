@@ -66,7 +66,7 @@
         </div>
     </div>
 
-    <!-- DEDICATED TASK DETAIL VIEW WITH ENHANCED ACTION BUTTONS -->
+    <!-- DEDICATED TASK DETAIL VIEW -->
     <div id="detail-view" class="view">
         <button id="back-to-list-btn" class="back-btn" data-i18n="back_to_main">➡️ العودة للقائمة الرئيسية</button>
 
@@ -107,12 +107,36 @@
         </div>
     </div>
 
-    <!-- SETTINGS VIEW -->
+    <!-- SETTINGS VIEW WITH HYPER OS STYLE OPTION & VERSION CARD -->
     <div id="settings-view" class="view">
         <button id="back-from-settings-btn" class="back-btn" data-i18n="back_to_main">➡️ العودة للقائمة الرئيسية</button>
 
         <div class="settings-card">
             <h2 class="settings-title" data-i18n="app_settings">⚙️ إعدادات التطبيق</h2>
+
+            <!-- ⚡ HyperOS 3 System & Version Widget -->
+            <div class="hyper-os-banner">
+                <div class="hyper-os-logo">HyperOS 3</div>
+                <div class="hyper-os-info">
+                    <div class="hyper-os-header-row">
+                        <strong>Xiaomi HyperOS</strong>
+                        <span class="system-badge-version">v3.0.4.1.RELEASE</span>
+                    </div>
+                    <span class="hyper-os-status">🟢 النظام محدّث لأحدث إصدار</span>
+                </div>
+                <button id="check-update-btn" class="hyper-update-btn">
+                    <span>🔄</span> البحث عن تحديثات
+                </button>
+            </div>
+
+            <!-- UI Style Switcher -->
+            <div class="settings-section">
+                <h3 class="settings-subtitle" data-i18n="ui_style">🎨 نمط الواجهة (UI Style)</h3>
+                <select id="style-select" class="modal-select">
+                    <option value="default">الافتراضي (Modern Default)</option>
+                    <option value="hyperos">⚡ HyperOS 3 UI (ستايل هايبر)</option>
+                </select>
+            </div>
 
             <div class="settings-section">
                 <h3 class="settings-subtitle" data-i18n="language">🌐 لغة التطبيق</h3>
@@ -160,7 +184,7 @@
 
 </div>
 
-<!-- Modal Dialog with Due Date Picker -->
+<!-- Modal Dialog -->
 <div class="modal" id="task-modal">
     <div class="modal-content">
         <h3 class="modal-title" id="modal-heading" data-i18n="add_new_task">إضافة مهمة جديدة</h3>
