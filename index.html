@@ -8,7 +8,7 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@400;600;700&family=Cairo:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;600;700&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -19,9 +19,10 @@
         <div class="controls-group">
             <button id="theme-toggle" class="theme-toggle-btn">
                 <span id="theme-icon">🌙</span>
-                <span id="theme-text">الوضع الداكن</span>
+                <span id="theme-text" data-i18n="dark_mode">الوضع الداكن</span>
             </button>
-            <button id="palette-btn" class="palette-btn" title="تغيير الألوان">🎨 الألوان</button>
+            <button id="palette-btn" class="palette-btn" title="تغيير الألوان"><span data-i18n="colors">🎨 الألوان</span></button>
+            <button id="settings-toggle-btn" class="palette-btn" title="الإعدادات"><span data-i18n="settings">⚙️ الإعدادات</span></button>
 
             <div id="palette-menu" class="color-palette-menu">
                 <div class="color-dot active" style="background: #8b5cf6;" data-theme-value="default"></div>
@@ -32,64 +33,165 @@
         </div>
 
         <div class="stats-badge">
-            المهام المتبقية: <span id="pending-count">0</span>
+            <span data-i18n="pending_tasks">المهام المتبقية:</span> <span id="pending-count">0</span>
         </div>
     </div>
 
-    <!-- Header Section -->
-    <header>
-        <h1 class="main-title" id="title">To Do List 📝</h1>
-        <p class="author-subtitle">اضغط على العنوان لمعرفة المطور</p>
-    </header>
+    <!-- MAIN BOARD VIEW -->
+    <div id="main-view" class="view active">
+        <header>
+            <h1 class="main-title" id="title">To Do List 📝</h1>
+            <p class="author-subtitle" data-i18n="click_developer">اضغط على العنوان لمعرفة المطور</p>
+        </header>
 
-    <div class="actions-bar">
-        <button id="open-modal-btn" class="create-btn">
-            <span>+</span> إضافة مهمة جديدة
-        </button>
-    </div>
-
-    <!-- Tasks Board Columns -->
-    <div class="board">
-        <div class="column">
-            <div class="column-header"><h2 class="column-title">⏳ قيد الانتظار</h2></div>
-            <div class="task-list" id="tasks"></div>
+        <div class="actions-bar">
+            <button id="open-modal-btn" class="create-btn">
+                <span>+</span> <span data-i18n="add_new_task">إضافة مهمة جديدة</span>
+            </button>
+            <button id="manual-save-btn" class="create-btn" style="display: none; background: var(--success);">
+                💾 <span data-i18n="save_changes">حفظ التغييرات الآن</span>
+            </button>
         </div>
 
-        <div class="column">
-            <div class="column-header"><h2 class="column-title">✅ المكتملة</h2></div>
-            <div class="task-list" id="completed"></div>
+        <div class="board">
+            <div class="column">
+                <div class="column-header"><h2 class="column-title" data-i18n="in_progress">⏳ قيد الانتظار</h2></div>
+                <div class="task-list" id="tasks"></div>
+            </div>
+
+            <div class="column">
+                <div class="column-header"><h2 class="column-title" data-i18n="completed">✅ المكتملة</h2></div>
+                <div class="task-list" id="completed"></div>
+            </div>
         </div>
     </div>
+
+    <!-- DEDICATED TASK DETAIL VIEW WITH ENHANCED ACTION BUTTONS -->
+    <div id="detail-view" class="view">
+        <button id="back-to-list-btn" class="back-btn" data-i18n="back_to_main">➡️ العودة للقائمة الرئيسية</button>
+
+        <div class="detail-card">
+            <div class="detail-header">
+                <div>
+                    <h2 id="detail-task-text" class="detail-title">عنوان المهمة</h2>
+                    <div id="detail-due-date" class="detail-due-date-badge"></div>
+                </div>
+                <div id="detail-task-priority"></div>
+            </div>
+
+            <div>
+                <h3 class="detail-section-title" data-i18n="task_status">حالة المهمة</h3>
+                <p id="detail-task-status" style="font-size: 1rem; font-weight: 600;"></p>
+            </div>
+
+            <div>
+                <h3 class="detail-section-title" data-i18n="attached_files">الملفات المرفقة</h3>
+                <div id="detail-attachments-container" class="detail-attachments-list"></div>
+            </div>
+
+            <!-- Page Action Buttons Toolbar -->
+            <div class="detail-actions-toolbar">
+                <button id="detail-toggle-status-btn" class="create-btn" style="background: var(--warning);">
+                    🔄 <span data-i18n="toggle_status">تغيير الحالة</span>
+                </button>
+                <button id="detail-share-btn" class="create-btn" style="background: #0284c7;">
+                    🔗 <span data-i18n="share_task">مشاركة</span>
+                </button>
+                <button id="detail-edit-btn" class="create-btn" style="background: var(--surface-color); border:1px solid var(--card-border); color:var(--text-main);">
+                    ✏️ <span data-i18n="edit_task">تعديل</span>
+                </button>
+                <button id="detail-delete-btn" class="create-btn" style="background: var(--danger);">
+                    🗑️ <span data-i18n="delete_task">حذف</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SETTINGS VIEW -->
+    <div id="settings-view" class="view">
+        <button id="back-from-settings-btn" class="back-btn" data-i18n="back_to_main">➡️ العودة للقائمة الرئيسية</button>
+
+        <div class="settings-card">
+            <h2 class="settings-title" data-i18n="app_settings">⚙️ إعدادات التطبيق</h2>
+
+            <div class="settings-section">
+                <h3 class="settings-subtitle" data-i18n="language">🌐 لغة التطبيق</h3>
+                <select id="language-select" class="modal-select">
+                    <option value="ar">العربية (Arabic)</option>
+                    <option value="en">English (الإنجليزية)</option>
+                </select>
+            </div>
+
+            <div class="settings-section">
+                <h3 class="settings-subtitle" data-i18n="save_mode">💾 وضع الحفظ (Save Mode)</h3>
+                <select id="save-mode-select" class="modal-select">
+                    <option value="auto" data-i18n="auto_save">حفظ تلقائي (Auto Save)</option>
+                    <option value="manual" data-i18n="manual_save">حفظ يدوي (Manual Save)</option>
+                </select>
+            </div>
+
+            <div class="settings-section">
+                <h3 class="settings-subtitle" data-i18n="font_style">🔤 نوع الخط (Font Style)</h3>
+                <select id="font-select" class="modal-select">
+                    <option value="'Plus Jakarta Sans', sans-serif">Plus Jakarta Sans (افتراضي)</option>
+                    <option value="'Cairo', sans-serif">Cairo (القاهرة)</option>
+                    <option value="'Tajawal', sans-serif">Tajawal (تجوال)</option>
+                    <option value="'Alexandria', sans-serif">Alexandria (الإسكندرية)</option>
+                </select>
+            </div>
+
+            <div class="settings-section">
+                <h3 class="settings-subtitle" data-i18n="backup_restore">📦 النسخ الاحتياطي والاستعادة</h3>
+                <div class="settings-actions">
+                    <button id="export-btn" class="create-btn" data-i18n="export_tasks">📥 تصدير المهام</button>
+                    <label for="import-file-input" class="create-btn" style="background: var(--surface-color); border: 1px solid var(--card-border); color: var(--text-main);" data-i18n="import_tasks">
+                        📤 استيراد المهام
+                    </label>
+                    <input type="file" id="import-file-input" accept=".json" style="display: none;" />
+                </div>
+            </div>
+
+            <div class="settings-section danger-zone">
+                <h3 class="settings-subtitle" style="color: var(--danger);" data-i18n="danger_zone">⚠️ منطقة الخطر</h3>
+                <button id="clear-all-btn" class="create-btn" style="background: var(--danger);" data-i18n="delete_all">🗑️ حذف جميع المهام</button>
+            </div>
+        </div>
+    </div>
+
 </div>
 
-<!-- Modal Dialog -->
+<!-- Modal Dialog with Due Date Picker -->
 <div class="modal" id="task-modal">
     <div class="modal-content">
-        <h3 class="modal-title" id="modal-heading">إضافة مهمة جديدة</h3>
+        <h3 class="modal-title" id="modal-heading" data-i18n="add_new_task">إضافة مهمة جديدة</h3>
 
         <div class="form-group">
-            <label class="form-label">تفاصيل المهمة</label>
-            <input type="text" id="modal-input" class="modal-input" placeholder="اكتب تفاصيل المهمة..." />
+            <label class="form-label" data-i18n="task_details">تفاصيل المهمة</label>
+            <input type="text" id="modal-input" class="modal-input" placeholder="..." />
         </div>
 
         <div class="form-group">
-            <label class="form-label">أولوية المهمة</label>
+            <label class="form-label" data-i18n="due_date">تاريخ ووقت الاستحقاق (تذكير)</label>
+            <input type="datetime-local" id="modal-duedate" class="modal-input" />
+        </div>
+
+        <div class="form-group">
+            <label class="form-label" data-i18n="task_priority">أولوية المهمة</label>
             <select id="modal-priority" class="modal-select">
-                <option value="high">🔴 عالي - أولوية عاجلة</option>
-                <option value="medium" selected>🟡 متوسط - أولوية عادية</option>
-                <option value="low">🟢 منخفض - أولوية غير عاجلة</option>
+                <option value="high" data-i18n="priority_high">🔴 عالي - أولوية عاجلة</option>
+                <option value="medium" selected data-i18n="priority_medium">🟡 متوسط - أولوية عادية</option>
+                <option value="low" data-i18n="priority_low">🟢 منخفض - أولوية غير عاجلة</option>
             </select>
         </div>
 
         <div class="form-group">
-            <label class="form-label">إرفاق ملفات متعددة (Excel, PHP, Images, PDF...)</label>
+            <label class="form-label" data-i18n="attach_files">إرفاق ملفات متعددة</label>
             <input type="file" id="modal-file" class="modal-input" multiple />
-            <span style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">يمكنك اختيار أكثر من ملف دفعة واحدة.</span>
         </div>
 
         <div class="modal-actions">
-            <button class="modal-btn cancel" id="close-modal-btn">إلغاء</button>
-            <button class="modal-btn save" id="save-task-btn">حفظ المهمة</button>
+            <button class="modal-btn cancel" id="close-modal-btn" data-i18n="cancel">إلغاء</button>
+            <button class="modal-btn save" id="save-task-btn" data-i18n="save_task">حفظ المهمة</button>
         </div>
     </div>
 </div>
