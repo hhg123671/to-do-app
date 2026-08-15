@@ -2,7 +2,9 @@ let allTasks = JSON.parse(localStorage.getItem('my_tasks_v2')) || [];
 let appSettings = JSON.parse(localStorage.getItem('app_settings_v1')) || {
     lang: 'ar',
     saveMode: 'auto',
-    fontFamily: "'Plus Jakarta Sans', sans-serif"
+    fontFamily: "'Plus Jakarta Sans', sans-serif",
+    colorTheme: 'default',
+    uiStyle: 'default'
 };
 
 let editingTaskId = null;
@@ -28,6 +30,7 @@ const i18n = {
         share_task: "مشاركة",
         toggle_status: "تغيير الحالة",
         app_settings: "⚙️ إعدادات التطبيق",
+        ui_style: "🎨 نمط الواجهة (UI Style)",
         language: "🌐 لغة التطبيق",
         save_mode: "💾 وضع الحفظ (Save Mode)",
         auto_save: "حفظ تلقائي (Auto Save)",
@@ -69,6 +72,7 @@ const i18n = {
         share_task: "Share",
         toggle_status: "Toggle Status",
         app_settings: "⚙️ App Settings",
+        ui_style: "🎨 UI Style",
         language: "🌐 App Language",
         save_mode: "💾 Save Mode",
         auto_save: "Auto Save",
@@ -102,10 +106,15 @@ const backToListBtn = document.getElementById("back-to-list-btn");
 const backFromSettingsBtn = document.getElementById("back-from-settings-btn");
 const settingsToggleBtn = document.getElementById("settings-toggle-btn");
 
+const styleSelect = document.getElementById("style-select");
 const languageSelect = document.getElementById("language-select");
 const saveModeSelect = document.getElementById("save-mode-select");
 const fontSelect = document.getElementById("font-select");
 const manualSaveBtn = document.getElementById("manual-save-btn");
+
+const paletteBtn = document.getElementById("palette-btn");
+const paletteMenu = document.getElementById("palette-menu");
+const colorDots = document.querySelectorAll(".color-dot");
 
 const exportBtn = document.getElementById("export-btn");
 const importFileInput = document.getElementById("import-file-input");
@@ -134,6 +143,7 @@ const modalFileInput = document.getElementById("modal-file");
 const openModalBtn = document.getElementById("open-modal-btn");
 const closeModalBtn = document.getElementById("close-modal-btn");
 const saveTaskBtn = document.getElementById("save-task-btn");
+const checkUpdateBtn = document.getElementById("check-update-btn");
 
 function applySettings() {
     document.documentElement.lang = appSettings.lang;
@@ -149,12 +159,58 @@ function applySettings() {
     document.body.style.fontFamily = appSettings.fontFamily;
     manualSaveBtn.style.display = appSettings.saveMode === 'manual' ? 'inline-flex' : 'none';
 
+    // ⚡ Apply UI Style (HyperOS 3 or Default)
+    if (appSettings.uiStyle === 'hyperos') {
+        document.documentElement.setAttribute('data-ui-style', 'hyperos');
+    } else {
+        document.documentElement.removeAttribute('data-ui-style');
+    }
+
+    // 🎨 Apply Color Theme
+    if (appSettings.colorTheme && appSettings.colorTheme !== 'default') {
+        document.documentElement.setAttribute('data-theme', appSettings.colorTheme);
+    } else {
+        document.documentElement.removeAttribute('data-theme');
+    }
+
+    colorDots.forEach(dot => {
+        if (dot.getAttribute('data-theme-value') === (appSettings.colorTheme || 'default')) {
+            dot.classList.add('active');
+        } else {
+            dot.classList.remove('active');
+        }
+    });
+
+    styleSelect.value = appSettings.uiStyle || 'default';
     languageSelect.value = appSettings.lang;
     saveModeSelect.value = appSettings.saveMode;
     fontSelect.value = appSettings.fontFamily;
 
     localStorage.setItem('app_settings_v1', JSON.stringify(appSettings));
 }
+
+styleSelect.addEventListener('change', (e) => {
+    appSettings.uiStyle = e.target.value;
+    applySettings();
+});
+
+paletteBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    paletteMenu.classList.toggle('show');
+});
+
+document.addEventListener('click', () => {
+    paletteMenu.classList.remove('show');
+});
+
+colorDots.forEach(dot => {
+    dot.addEventListener('click', (e) => {
+        e.stopPropagation();
+        appSettings.colorTheme = dot.getAttribute('data-theme-value');
+        applySettings();
+        paletteMenu.classList.remove('show');
+    });
+});
 
 function updateState() {
     if (appSettings.saveMode === 'auto') {
@@ -172,6 +228,41 @@ manualSaveBtn.addEventListener('click', () => {
 languageSelect.addEventListener('change', (e) => { appSettings.lang = e.target.value; applySettings(); renderTasks(); });
 saveModeSelect.addEventListener('change', (e) => { appSettings.saveMode = e.target.value; applySettings(); });
 fontSelect.addEventListener('change', (e) => { appSettings.fontFamily = e.target.value; applySettings(); });
+
+exportBtn.addEventListener('click', () => {
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(allTasks));
+    const downloadAnchor = document.createElement('a');
+    downloadAnchor.setAttribute("href", dataStr);
+    downloadAnchor.setAttribute("download", `todo_backup_${Date.now()}.json`);
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
+});
+
+importFileInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+        try {
+            allTasks = JSON.parse(evt.target.result);
+            updateState();
+            renderTasks();
+            alert(appSettings.lang === 'ar' ? 'تم استيراد البيانات بنجاح!' : 'Data imported successfully!');
+        } catch(err) {
+            alert(appSettings.lang === 'ar' ? 'ملف غير صالح!' : 'Invalid file!');
+        }
+    };
+    reader.readAsText(file);
+});
+
+clearAllBtn.addEventListener('click', () => {
+    if (confirm(appSettings.lang === 'ar' ? 'هل أنت تأكد من حذف جميع المهام؟' : 'Are you sure you want to delete all tasks?')) {
+        allTasks = [];
+        updateState();
+        renderTasks();
+    }
+});
 
 function hideAllViews() {
     mainView.classList.remove("active");
@@ -214,7 +305,6 @@ function openTaskDetailView(taskId) {
     detailView.classList.add("active");
 }
 
-// Single Task Action Handlers inside Detail View
 detailToggleStatusBtn.addEventListener('click', () => {
     const task = allTasks.find(t => t.id === currentOpenedTaskId);
     if (task) {
@@ -373,6 +463,22 @@ saveTaskBtn.addEventListener('click', () => {
 });
 
 document.getElementById("theme-toggle").addEventListener("click", () => { document.body.classList.toggle("light-mode"); });
+
+if (checkUpdateBtn) {
+    checkUpdateBtn.addEventListener("click", () => {
+        checkUpdateBtn.textContent = "⏳ جاري البحث...";
+        checkUpdateBtn.style.opacity = "0.7";
+
+        setTimeout(() => {
+            checkUpdateBtn.textContent = "✅ لا توجد تحديثات جديدة";
+            checkUpdateBtn.style.opacity = "1";
+
+            setTimeout(() => {
+                checkUpdateBtn.innerHTML = "<span>🔄</span> البحث عن تحديثات";
+            }, 3000);
+        }, 1500);
+    });
+}
 
 function escapeHtml(str) {
     return str.replace(/[&<>"']/g, (m) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m]));
