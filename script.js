@@ -1,200 +1,345 @@
-// App State Variables
 let allTasks = JSON.parse(localStorage.getItem('my_tasks_v2')) || [];
+let appSettings = JSON.parse(localStorage.getItem('app_settings_v1')) || {
+    lang: 'ar',
+    saveMode: 'auto',
+    fontFamily: "'Plus Jakarta Sans', sans-serif"
+};
+
 let editingTaskId = null;
+let currentOpenedTaskId = null;
 let pendingUploadedFiles = [];
 
-// DOM Elements
+const i18n = {
+    ar: {
+        dark_mode: "الوضع الداكن",
+        colors: "🎨 الألوان",
+        settings: "⚙️ الإعدادات",
+        pending_tasks: "المهام المتبقية:",
+        click_developer: "اضغط على العنوان لمعرفة المطور",
+        add_new_task: "إضافة مهمة جديدة",
+        save_changes: "حفظ التغييرات الآن",
+        in_progress: "⏳ قيد الانتظار",
+        completed: "✅ المكتملة",
+        back_to_main: "➡️ العودة للقائمة الرئيسية",
+        task_status: "حالة المهمة",
+        attached_files: "الملفات المرفقة",
+        edit_task: "تعديل",
+        delete_task: "حذف",
+        share_task: "مشاركة",
+        toggle_status: "تغيير الحالة",
+        app_settings: "⚙️ إعدادات التطبيق",
+        language: "🌐 لغة التطبيق",
+        save_mode: "💾 وضع الحفظ (Save Mode)",
+        auto_save: "حفظ تلقائي (Auto Save)",
+        manual_save: "حفظ يدوي (Manual Save)",
+        font_style: "🔤 نوع الخط (Font Style)",
+        backup_restore: "📦 النسخ الاحتياطي والاستعادة",
+        export_tasks: "📥 تصدير المهام",
+        import_tasks: "📤 استيراد المهام",
+        danger_zone: "⚠️ منطقة الخطر",
+        delete_all: "🗑️ حذف جميع المهام",
+        task_details: "تفاصيل المهمة",
+        due_date: "تاريخ ووقت الاستحقاق (تذكير)",
+        task_priority: "أولوية المهمة",
+        priority_high: "🔴 عالي - أولوية عاجلة",
+        priority_medium: "🟡 متوسط - أولوية عادية",
+        priority_low: "🟢 منخفض - أولوية غير عاجلة",
+        attach_files: "إرفاق ملفات متعددة",
+        cancel: "إلغاء",
+        save_task: "حفظ المهمة",
+        task_completed: "✅ هذه المهمة مكتملة",
+        task_pending: "⏳ قيد الانتظار",
+        copied: "تم نسخ معلومات المهمة للحافظة!"
+    },
+    en: {
+        dark_mode: "Dark Mode",
+        colors: "🎨 Colors",
+        settings: "⚙️ Settings",
+        pending_tasks: "Pending Tasks:",
+        click_developer: "Click title to show developer",
+        add_new_task: "Add New Task",
+        save_changes: "Save Changes Now",
+        in_progress: "⏳ In Progress",
+        completed: "✅ Completed",
+        back_to_main: "➡️ Back to Main List",
+        task_status: "Task Status",
+        attached_files: "Attached Files",
+        edit_task: "Edit",
+        delete_task: "Delete",
+        share_task: "Share",
+        toggle_status: "Toggle Status",
+        app_settings: "⚙️ App Settings",
+        language: "🌐 App Language",
+        save_mode: "💾 Save Mode",
+        auto_save: "Auto Save",
+        manual_save: "Manual Save",
+        font_style: "🔤 Font Style",
+        backup_restore: "📦 Backup & Restore",
+        export_tasks: "📥 Export Tasks",
+        import_tasks: "📤 Import Tasks",
+        danger_zone: "⚠️ Danger Zone",
+        delete_all: "🗑️ Delete All Tasks",
+        task_details: "Task Details",
+        due_date: "Due Date & Time (Reminder)",
+        task_priority: "Task Priority",
+        priority_high: "🔴 High Priority",
+        priority_medium: "🟡 Medium Priority",
+        priority_low: "🟢 Low Priority",
+        attach_files: "Attach Multiple Files",
+        cancel: "Cancel",
+        save_task: "Save Task",
+        task_completed: "✅ Task Completed",
+        task_pending: "⏳ Pending Task",
+        copied: "Task details copied to clipboard!"
+    }
+};
+
+const mainView = document.getElementById("main-view");
+const detailView = document.getElementById("detail-view");
+const settingsView = document.getElementById("settings-view");
+
+const backToListBtn = document.getElementById("back-to-list-btn");
+const backFromSettingsBtn = document.getElementById("back-from-settings-btn");
+const settingsToggleBtn = document.getElementById("settings-toggle-btn");
+
+const languageSelect = document.getElementById("language-select");
+const saveModeSelect = document.getElementById("save-mode-select");
+const fontSelect = document.getElementById("font-select");
+const manualSaveBtn = document.getElementById("manual-save-btn");
+
+const exportBtn = document.getElementById("export-btn");
+const importFileInput = document.getElementById("import-file-input");
+const clearAllBtn = document.getElementById("clear-all-btn");
+
+const detailTaskText = document.getElementById("detail-task-text");
+const detailDueDate = document.getElementById("detail-due-date");
+const detailTaskPriority = document.getElementById("detail-task-priority");
+const detailTaskStatus = document.getElementById("detail-task-status");
+const detailAttachmentsContainer = document.getElementById("detail-attachments-container");
+
+const detailToggleStatusBtn = document.getElementById("detail-toggle-status-btn");
+const detailShareBtn = document.getElementById("detail-share-btn");
+const detailEditBtn = document.getElementById("detail-edit-btn");
+const detailDeleteBtn = document.getElementById("detail-delete-btn");
+
 const tasksContainer = document.getElementById("tasks");
 const completedContainer = document.getElementById("completed");
-const title = document.getElementById("title");
 const pendingCount = document.getElementById("pending-count");
 
-// Modal DOM Elements
 const modal = document.getElementById("task-modal");
 const modalInput = document.getElementById("modal-input");
+const modalDueDate = document.getElementById("modal-duedate");
 const modalPriority = document.getElementById("modal-priority");
 const modalFileInput = document.getElementById("modal-file");
 const openModalBtn = document.getElementById("open-modal-btn");
 const closeModalBtn = document.getElementById("close-modal-btn");
 const saveTaskBtn = document.getElementById("save-task-btn");
-const modalHeading = document.getElementById("modal-heading");
 
-// Theme Elements
-const paletteBtn = document.getElementById("palette-btn");
-const paletteMenu = document.getElementById("palette-menu");
-const colorDots = document.querySelectorAll(".color-dot");
+function applySettings() {
+    document.documentElement.lang = appSettings.lang;
+    document.documentElement.dir = appSettings.lang === 'ar' ? 'rtl' : 'ltr';
 
-// Author Toggle
-if (title) {
-    title.addEventListener("click", () => {
-        title.textContent = title.textContent === "by Hamza Mohamed" ? "To Do List 📝" : "by Hamza Mohamed";
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (i18n[appSettings.lang][key]) {
+            el.textContent = i18n[appSettings.lang][key];
+        }
     });
+
+    document.body.style.fontFamily = appSettings.fontFamily;
+    manualSaveBtn.style.display = appSettings.saveMode === 'manual' ? 'inline-flex' : 'none';
+
+    languageSelect.value = appSettings.lang;
+    saveModeSelect.value = appSettings.saveMode;
+    fontSelect.value = appSettings.fontFamily;
+
+    localStorage.setItem('app_settings_v1', JSON.stringify(appSettings));
 }
 
-// Local Storage & Stats Handler
 function updateState() {
-    localStorage.setItem('my_tasks_v2', JSON.stringify(allTasks));
+    if (appSettings.saveMode === 'auto') {
+        localStorage.setItem('my_tasks_v2', JSON.stringify(allTasks));
+    }
     const pending = allTasks.filter(t => !t.isCompleted).length;
     pendingCount.textContent = pending;
 }
 
-function getPriorityBadge(priority) {
-    switch(priority) {
-        case 'high': return `<span class="priority-badge priority-high">🔴 عالي</span>`;
-        case 'low': return `<span class="priority-badge priority-low">🟢 منخفض</span>`;
-        default: return `<span class="priority-badge priority-medium">🟡 متوسط</span>`;
+manualSaveBtn.addEventListener('click', () => {
+    localStorage.setItem('my_tasks_v2', JSON.stringify(allTasks));
+    alert(appSettings.lang === 'ar' ? 'تم حفظ المهام بنجاح!' : 'Tasks saved successfully!');
+});
+
+languageSelect.addEventListener('change', (e) => { appSettings.lang = e.target.value; applySettings(); renderTasks(); });
+saveModeSelect.addEventListener('change', (e) => { appSettings.saveMode = e.target.value; applySettings(); });
+fontSelect.addEventListener('change', (e) => { appSettings.fontFamily = e.target.value; applySettings(); });
+
+function hideAllViews() {
+    mainView.classList.remove("active");
+    detailView.classList.remove("active");
+    settingsView.classList.remove("active");
+}
+
+function showMainView() {
+    hideAllViews();
+    mainView.classList.add("active");
+    currentOpenedTaskId = null;
+    renderTasks();
+}
+
+function openTaskDetailView(taskId) {
+    const task = allTasks.find(t => t.id === taskId);
+    if (!task) return;
+
+    currentOpenedTaskId = taskId;
+    detailTaskText.textContent = task.text;
+    detailTaskPriority.innerHTML = getPriorityBadge(task.priority || 'medium');
+
+    detailDueDate.textContent = task.dueDate ? `⏰ ${new Date(task.dueDate).toLocaleString()}` : '';
+
+    detailTaskStatus.innerHTML = task.isCompleted
+        ? `<span style="color:var(--success)">${i18n[appSettings.lang].task_completed}</span>`
+        : `<span style="color:var(--warning)">${i18n[appSettings.lang].task_pending}</span>`;
+
+    detailAttachmentsContainer.innerHTML = '';
+    if (task.files && task.files.length > 0) {
+        task.files.forEach(file => {
+            const card = document.createElement('div');
+            card.className = 'detail-attachment-card';
+            card.innerHTML = `<span class="detail-attachment-name">${escapeHtml(file.name)}</span> <a href="${file.url}" download="${file.name}">💾</a>`;
+            detailAttachmentsContainer.appendChild(card);
+        });
     }
+
+    hideAllViews();
+    detailView.classList.add("active");
 }
 
-function getExtensionBadge(fileName) {
-    const ext = fileName.split('.').pop().toLowerCase();
-    return `<span class="file-icon-badge">${ext}</span>`;
+// Single Task Action Handlers inside Detail View
+detailToggleStatusBtn.addEventListener('click', () => {
+    const task = allTasks.find(t => t.id === currentOpenedTaskId);
+    if (task) {
+        task.isCompleted = !task.isCompleted;
+        updateState();
+        openTaskDetailView(currentOpenedTaskId);
+    }
+});
+
+detailShareBtn.addEventListener('click', () => {
+    const task = allTasks.find(t => t.id === currentOpenedTaskId);
+    if (task) {
+        const textToCopy = `📌 Task: ${task.text}\nPriority: ${task.priority}\nStatus: ${task.isCompleted ? 'Completed' : 'Pending'}`;
+        navigator.clipboard.writeText(textToCopy);
+        alert(i18n[appSettings.lang].copied);
+    }
+});
+
+detailEditBtn.addEventListener('click', () => {
+    const task = allTasks.find(t => t.id === currentOpenedTaskId);
+    if (task) {
+        editingTaskId = task.id;
+        modalInput.value = task.text;
+        modalDueDate.value = task.dueDate || '';
+        modalPriority.value = task.priority || 'medium';
+        pendingUploadedFiles = task.files || [];
+        openModal();
+    }
+});
+
+detailDeleteBtn.addEventListener('click', () => {
+    if (confirm("Delete this task?")) {
+        allTasks = allTasks.filter(t => t.id !== currentOpenedTaskId);
+        updateState();
+        showMainView();
+    }
+});
+
+backToListBtn.addEventListener("click", showMainView);
+backFromSettingsBtn.addEventListener("click", showMainView);
+settingsToggleBtn.addEventListener("click", () => { hideAllViews(); settingsView.classList.add("active"); });
+
+function getPriorityBadge(priority) {
+    if (priority === 'high') return `<span class="priority-badge priority-high">🔴 High</span>`;
+    if (priority === 'low') return `<span class="priority-badge priority-low">🟢 Low</span>`;
+    return `<span class="priority-badge priority-medium">🟡 Medium</span>`;
 }
 
-function buildAttachmentsHtml(filesArray, taskId) {
-    if (!filesArray || filesArray.length === 0) return '';
-
-    const itemsHtml = filesArray.map((file, index) => `
-            <div class="attachment-item">
-                <div style="display:flex; align-items:center; gap:8px; overflow:hidden;">
-                    ${getExtensionBadge(file.name)}
-                    <span class="attachment-name" title="${escapeHtml(file.name)}">${escapeHtml(file.name)}</span>
-                </div>
-                <div class="attachment-actions">
-                    <a href="${file.url}" download="${file.name}" class="btn-attachment-action" title="تحميل الملف">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
-                    </a>
-                    <button class="btn-attachment-action delete-file" data-task-id="${taskId}" data-file-index="${index}" title="حذف الملف">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                    </button>
-                </div>
-            </div>
-        `).join('');
-
-    return `<div class="attachments-list">${itemsHtml}</div>`;
-}
-
-// Render Single Task Card Element
 function createCardElement(taskObj) {
     const card = document.createElement('div');
     card.className = `card ${taskObj.isCompleted ? 'completed' : ''}`;
-    const checkboxId = `cb-${taskObj.id}`;
+
+    let isOverdue = taskObj.dueDate && new Date(taskObj.dueDate) < new Date() && !taskObj.isCompleted;
 
     card.innerHTML = `
-            <div class="card-header-info">
-                ${getPriorityBadge(taskObj.priority || 'medium')}
+        <div class="card-header-info">
+            ${getPriorityBadge(taskObj.priority || 'medium')}
+            ${taskObj.dueDate ? `<span class="card-due-badge ${isOverdue ? 'due-overdue' : ''}">⏰ ${new Date(taskObj.dueDate).toLocaleDateString()}</span>` : ''}
+        </div>
+        <div class="card-body">
+            <p class="card-text">${escapeHtml(taskObj.text)}</p>
+        </div>
+        <div class="card-footer">
+            <span>📎 ${taskObj.files ? taskObj.files.length : 0}</span>
+            <div class="card-footer-actions">
+                <button class="btn-icon edit">✏️</button>
+                <button class="btn-icon delete">🗑️</button>
             </div>
-            <div class="card-body">
-                <div class="checkbox-container">
-                  <div class="checkbox-wrapper">
-                    <input class="checkbox" id="${checkboxId}" type="checkbox" ${taskObj.isCompleted ? 'checked' : ''} />
-                    <label class="checkbox-label" for="${checkboxId}">
-                      <div class="checkbox-flip">
-                        <div class="checkbox-front"><svg fill="white" height="18" width="18" viewBox="0 0 24 24"><path d="M19 13H12V19H11V13H5V12H11V6H12V12H19V13Z"></path></svg></div>
-                        <div class="checkbox-back"><svg fill="white" height="18" width="18" viewBox="0 0 24 24"><path d="M9 19l-7-7 1.41-1.41L9 16.17l11.29-11.3L22 6l-13 13z"></path></svg></div>
-                      </div>
-                    </label>
-                  </div>
-                </div>
-                <p class="card-text">${escapeHtml(taskObj.text)}</p>
-            </div>
+        </div>
+    `;
 
-            ${buildAttachmentsHtml(taskObj.files, taskObj.id)}
-
-            <div class="card-footer">
-                <button class="btn-icon edit" title="تعديل"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button>
-                <button class="btn-icon delete" title="حذف"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
-            </div>
-        `;
-
-    // Task Status Listener
-    card.querySelector('.checkbox').addEventListener('change', (e) => {
-        setTimeout(() => {
-            taskObj.isCompleted = e.target.checked;
-            updateState();
-            renderTasks();
-        }, 250);
+    card.addEventListener('click', (e) => {
+        if (e.target.closest('.card-footer-actions')) return;
+        openTaskDetailView(taskObj.id);
     });
 
-    // Delete File Attachment Listener
-    card.querySelectorAll('.delete-file').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const index = e.currentTarget.getAttribute('data-file-index');
-            taskObj.files.splice(index, 1);
-            updateState();
-            renderTasks();
-        });
-    });
-
-    // Delete Task
-    card.querySelector('.btn-icon.delete').addEventListener('click', () => {
+    card.querySelector('.btn-icon.delete').addEventListener('click', (e) => {
+        e.stopPropagation();
         allTasks = allTasks.filter(t => t.id !== taskObj.id);
         updateState();
         renderTasks();
     });
 
-    // Edit Task
-    card.querySelector('.btn-icon.edit').addEventListener('click', () => {
+    card.querySelector('.btn-icon.edit').addEventListener('click', (e) => {
+        e.stopPropagation();
         editingTaskId = taskObj.id;
         modalInput.value = taskObj.text;
+        modalDueDate.value = taskObj.dueDate || '';
         modalPriority.value = taskObj.priority || 'medium';
         pendingUploadedFiles = taskObj.files || [];
-        modalHeading.textContent = "تعديل المهمة";
         openModal();
     });
 
     return card;
 }
 
-// Render All Tasks
 function renderTasks() {
     tasksContainer.innerHTML = '';
     completedContainer.innerHTML = '';
-
-    const priorityWeight = { high: 3, medium: 2, low: 1 };
-    const sortedTasks = [...allTasks].sort((a, b) => priorityWeight[b.priority || 'medium'] - priorityWeight[a.priority || 'medium']);
-
-    sortedTasks.forEach(task => {
-        const cardEl = createCardElement(task);
-        if (task.isCompleted) completedContainer.appendChild(cardEl);
-        else tasksContainer.appendChild(cardEl);
+    allTasks.forEach(task => {
+        const card = createCardElement(task);
+        if (task.isCompleted) completedContainer.appendChild(card);
+        else tasksContainer.appendChild(card);
     });
-
     updateState();
 }
 
-// File Input Upload Logic
 modalFileInput.addEventListener('change', (e) => {
-    const files = Array.from(e.target.files);
-    if (!files.length) return;
-
-    files.forEach(file => {
+    Array.from(e.target.files).forEach(file => {
         const reader = new FileReader();
-        reader.onload = (evt) => {
-            pendingUploadedFiles.push({
-                name: file.name,
-                url: evt.target.result
-            });
-        };
+        reader.onload = (evt) => pendingUploadedFiles.push({ name: file.name, url: evt.target.result });
         reader.readAsDataURL(file);
     });
 });
 
-// Modal Control Logic
 function openModal() { modal.style.display = 'flex'; modalInput.focus(); }
 function closeModal() {
-    renderTasks();
     modal.style.display = 'none';
     modalInput.value = '';
-    modalPriority.value = 'medium';
-    modalFileInput.value = '';
+    modalDueDate.value = '';
     pendingUploadedFiles = [];
     editingTaskId = null;
-    modalHeading.textContent = "إضافة مهمة جديدة";
-
 }
-openModalBtn.addEventListener('click', openModal);
 
+openModalBtn.addEventListener('click', openModal);
 closeModalBtn.addEventListener('click', closeModal);
 
 saveTaskBtn.addEventListener('click', () => {
@@ -205,6 +350,7 @@ saveTaskBtn.addEventListener('click', () => {
         const task = allTasks.find(t => t.id === editingTaskId);
         if (task) {
             task.text = val;
+            task.dueDate = modalDueDate.value;
             task.priority = modalPriority.value;
             task.files = pendingUploadedFiles;
         }
@@ -212,6 +358,7 @@ saveTaskBtn.addEventListener('click', () => {
         allTasks.push({
             id: Date.now(),
             text: val,
+            dueDate: modalDueDate.value,
             priority: modalPriority.value,
             files: pendingUploadedFiles,
             isCompleted: false
@@ -221,34 +368,15 @@ saveTaskBtn.addEventListener('click', () => {
     updateState();
     renderTasks();
     closeModal();
+
+    if (currentOpenedTaskId) openTaskDetailView(currentOpenedTaskId);
 });
-// Theme & Color Palette Menu Options
-paletteBtn.addEventListener("click", (e) => { e.stopPropagation(); paletteMenu.classList.toggle("show"); });
 
-document.addEventListener("click", () => paletteMenu.classList.remove("show"));
-colorDots.forEach(dot => {
-    dot.addEventListener("click", () => {
-        const themeValue = dot.getAttribute("data-theme-value");
-        colorDots.forEach(d => d.classList.remove("active"));
-        dot.classList.add("active");
+document.getElementById("theme-toggle").addEventListener("click", () => { document.body.classList.toggle("light-mode"); });
 
-        if (themeValue === "default") document.documentElement.removeAttribute("data-theme");
-        else document.documentElement.setAttribute("data-theme", themeValue);
-
-        localStorage.setItem("selected_theme", themeValue);
-    });
-
-});
-// Toggle Dark / Light Mode
-const themeToggleBtn = document.getElementById("theme-toggle");
-
-themeToggleBtn.addEventListener("click", () => {
-    document.body.classList.toggle("light-mode");
-    const isLight = document.body.classList.contains("light-mode");
-    document.getElementById("theme-icon").textContent = isLight ? "☀️" : "🌙";
-    document.getElementById("theme-text").textContent = isLight ? "الوضع الفاتح" : "الوضع الداكن";
-});
 function escapeHtml(str) {
     return str.replace(/[&<>"']/g, (m) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m]));
-
 }
+
+applySettings();
+renderTasks();
