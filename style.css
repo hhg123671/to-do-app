@@ -19,6 +19,102 @@
     --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* ⚡ HyperOS 3 Theme Specifications */
+[data-ui-style="hyperos"] {
+    --radius-lg: 24px;
+    --radius-md: 18px;
+    --bg-color: #080b11;
+    --surface-color: rgba(26, 32, 44, 0.7);
+    --card-bg: rgba(255, 255, 255, 0.05);
+    --card-border: rgba(255, 255, 255, 0.12);
+    --shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+}
+
+[data-ui-style="hyperos"] body {
+    background: radial-gradient(circle at top right, #1e1b4b, #080b11 60%);
+    backdrop-filter: blur(20px);
+}
+
+[data-ui-style="hyperos"] .column,
+[data-ui-style="hyperos"] .detail-card,
+[data-ui-style="hyperos"] .settings-card,
+[data-ui-style="hyperos"] .card {
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+[data-ui-style="hyperos"] .create-btn,
+[data-ui-style="hyperos"] .theme-toggle-btn,
+[data-ui-style="hyperos"] .palette-btn,
+[data-ui-style="hyperos"] .back-btn {
+    border-radius: 30px;
+}
+
+.hyper-os-banner {
+    display: none;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(139, 92, 246, 0.2));
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: white;
+    padding: 1.4rem;
+    border-radius: var(--radius-md);
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+[data-ui-style="hyperos"] .hyper-os-banner { display: flex; }
+
+.hyper-os-logo {
+    font-weight: 800;
+    font-size: 1.2rem;
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+    color: #fff;
+    padding: 0.6rem 1rem;
+    border-radius: 16px;
+    box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+}
+
+.hyper-os-info { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+.hyper-os-header-row { display: flex; align-items: center; gap: 10px; }
+
+.system-badge-version {
+    font-size: 0.75rem;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 2px 8px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #94a3b8;
+}
+
+.hyper-os-status { font-size: 0.85rem; color: #10b981; font-weight: 600; }
+
+.hyper-update-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #fff;
+    padding: 0.6rem 1rem;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: var(--transition);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.hyper-update-btn:hover {
+    background: var(--primary);
+    transform: scale(1.05);
+}
+
+/* Themes Palette Colors */
+[data-theme="ocean"] { --primary: #0284c7; --primary-hover: #0369a1; }
+[data-theme="emerald"] { --primary: #10b981; --primary-hover: #059669; }
+[data-theme="rose"] { --primary: #f43f5e; --primary-hover: #e11d48; }
+
 body.light-mode {
     --bg-color: #f1f5f9;
     --surface-color: #ffffff;
@@ -92,8 +188,8 @@ body {
 
 .color-palette-menu.show { display: flex; }
 
-.color-dot { width: 28px; height: 28px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; }
-.color-dot.active { border-color: var(--text-main); transform: scale(1.15); }
+.color-dot { width: 28px; height: 28px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: var(--transition); }
+.color-dot.active, .color-dot:hover { border-color: var(--text-main); transform: scale(1.15); }
 
 header { text-align: center; margin-bottom: 2.5rem; }
 
@@ -201,6 +297,17 @@ header { text-align: center; margin-bottom: 2.5rem; }
 .detail-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; border-bottom: 2px solid var(--card-border); padding-bottom: 1.2rem; }
 .detail-title { font-size: 1.8rem; font-weight: 700; color: var(--text-main); }
 .detail-due-date-badge { font-size: 0.9rem; color: var(--text-muted); margin-top: 6px; }
+
+.detail-attachment-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--card-bg);
+    padding: 0.75rem 1rem;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--card-border);
+    margin-top: 0.5rem;
+}
 
 .detail-actions-toolbar {
     display: flex;
