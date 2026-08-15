@@ -484,5 +484,55 @@ function escapeHtml(str) {
     return str.replace(/[&<>"']/g, (m) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m]));
 }
 
+// 🏝️ DYNAMIC ISLAND LOGIC
+const dynamicIsland = document.getElementById('dynamic-island');
+const islandPendingCount = document.getElementById('island-pending-count');
+const islandText = document.getElementById('island-text');
+const islandIcon = document.getElementById('island-icon');
+const islandDetailsText = document.getElementById('island-details-text');
+
+let islandTimeout = null;
+
+// التبديل بين التوسع والطي عند الضغط
+dynamicIsland.addEventListener('click', () => {
+    dynamicIsland.classList.toggle('expanded');
+});
+
+// دالة إرسال إشعار للجزيرة الديناميكية
+function triggerIslandNotification(icon, message, details = "") {
+    islandIcon.textContent = icon;
+    islandText.innerHTML = message;
+    if (details) islandDetailsText.textContent = details;
+
+    dynamicIsland.classList.add('pulse');
+    setTimeout(() => dynamicIsland.classList.remove('pulse'), 400);
+
+    // إذا كانت غير مفتوحة، تظهر الرسالة مؤقتاً ثم تعود لعدد المهام
+    clearTimeout(islandTimeout);
+    islandTimeout = setTimeout(() => {
+        const pending = allTasks.filter(t => !t.isCompleted).length;
+        islandIcon.textContent = "📝";
+        islandText.innerHTML = `المهام النشطة: <strong>${pending}</strong>`;
+        islandDetailsText.textContent = `لديك ${pending} مهام تنتظر التنفيذ.`;
+    }, 3500);
+}
+
+// تحديث دالة updateState لربط العداد بالجزيرة
+const originalUpdateState = updateState;
+updateState = function() {
+    if (typeof originalUpdateState === 'function') originalUpdateState();
+    const pending = allTasks.filter(t => !t.isCompleted).length;
+    if (islandPendingCount) islandPendingCount.textContent = pending;
+};
+
+// إرسال إشعار عند حفظ مهمة جديدة
+const originalSaveTask = saveTaskBtn.onclick;
+saveTaskBtn.addEventListener('click', () => {
+    const val = modalInput.value.trim();
+    if (val) {
+        triggerIslandNotification("✨", "تمت إضافة مهمة جديدة!", val);
+    }
+});
+
 applySettings();
 renderTasks();
